@@ -15,8 +15,9 @@ surfaces never diverge.
 
 - **Provisioning tools** — one MCP tool per verb over every resource: authorities, enrollments,
   credentials, devices, and API tokens.
-- **Uniform result envelope** — every tool returns the same `{ ok, code, message, dryRun, action,
-  data }` shape, so agents branch on one structure regardless of tool.
+- **Uniform result envelope** — every tool returns the same
+  `{ ok, code, message, dryRun, action, data }` shape, so agents branch on one structure regardless
+  of tool.
 - **Per-call dry-run** — mutating tools accept `dryRun`; when set, the change is planned and the
   intended request is reported without being sent.
 - **Stable error codes** — failures carry a code mirroring the CLI's exit-code contract (`auth`,
@@ -38,8 +39,9 @@ docker pull ghcr.io/qualithm/operator-mcp:latest
 ## Quick Start
 
 The server authenticates with a member API token (prefix `qmt_`). Provide it via `--token` or the
-`QUALITHM_API_TOKEN` environment variable; point at an environment with `--url` or `QUALITHM_API_URL`
-(defaults to `https://api.qualithm.com`). It speaks the Model Context Protocol over stdio.
+`QUALITHM_API_TOKEN` environment variable; point at an environment with `--url` or
+`QUALITHM_API_URL` (defaults to `https://api.qualithm.com`). It speaks the Model Context Protocol
+over stdio.
 
 ```bash
 export QUALITHM_API_TOKEN=qmt_...
@@ -61,44 +63,44 @@ Register it with an MCP-capable agent, for example:
 }
 ```
 
-| Flag      | Env                  | Description                                  |
-| --------- | -------------------- | -------------------------------------------- |
-| `--url`   | `QUALITHM_API_URL`   | management API base URL                      |
-| `--token` | `QUALITHM_API_TOKEN` | member API token (`qmt_…`)                   |
-| `--help`  | —                    | print usage and exit                         |
+| Flag      | Env                  | Description                |
+| --------- | -------------------- | -------------------------- |
+| `--url`   | `QUALITHM_API_URL`   | management API base URL    |
+| `--token` | `QUALITHM_API_TOKEN` | member API token (`qmt_…`) |
+| `--help`  | —                    | print usage and exit       |
 
 ## Tools
 
-| Resource     | Tools                                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------- |
-| authorities  | `list_authorities` · `create_authority` · `revoke_authority`                                    |
-| enrollments  | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                  |
-| credentials  | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential` |
-| devices      | `list_devices` · `list_space_devices` · `get_device` · `create_device` · `update_device` · `delete_device` |
-| api tokens   | `list_api_tokens` · `create_api_token` · `revoke_api_token`                                      |
+| Resource    | Tools                                                                                                      |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| authorities | `list_authorities` · `create_authority` · `revoke_authority`                                               |
+| enrollments | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                             |
+| credentials | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential`          |
+| devices     | `list_devices` · `list_space_devices` · `get_device` · `create_device` · `update_device` · `delete_device` |
+| api tokens  | `list_api_tokens` · `create_api_token` · `revoke_api_token`                                                |
 
 ### Result envelope
 
 Every tool returns the same structured payload:
 
-| Field     | Meaning                                                              |
-| --------- | ------------------------------------------------------------------- |
-| `ok`      | whether the call succeeded (a dry-run counts as success)            |
-| `code`    | failure classification when `ok` is false                           |
-| `message` | human-readable error message when `ok` is false                     |
-| `dryRun`  | true when a mutation was planned but not applied                    |
-| `action`  | the planned request (`method`, `path`) for dry-run results          |
-| `data`    | the resource payload returned by the API on success                 |
+| Field     | Meaning                                                    |
+| --------- | ---------------------------------------------------------- |
+| `ok`      | whether the call succeeded (a dry-run counts as success)   |
+| `code`    | failure classification when `ok` is false                  |
+| `message` | human-readable error message when `ok` is false            |
+| `dryRun`  | true when a mutation was planned but not applied           |
+| `action`  | the planned request (`method`, `path`) for dry-run results |
+| `data`    | the resource payload returned by the API on success        |
 
 ### Error codes
 
-| Code           | Meaning              |
-| -------------- | -------------------- |
-| `auth`         | 401 / 403            |
-| `not_found`    | 404                  |
-| `conflict`     | 409                  |
-| `rate_limited` | 429                  |
-| `api`          | other non-2xx        |
+| Code           | Meaning                |
+| -------------- | ---------------------- |
+| `auth`         | 401 / 403              |
+| `not_found`    | 404                    |
+| `conflict`     | 409                    |
+| `rate_limited` | 429                    |
+| `api`          | other non-2xx          |
 | `error`        | transport / unexpected |
 
 ## Development
