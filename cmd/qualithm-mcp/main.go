@@ -1,4 +1,4 @@
-// Command qualithm-mcp is the operator MCP server for the qualithm platform
+// Command qualithm-mcp is the operator MCP server for the Qualithm platform
 // management API: it exposes the provisioning surface (authorities,
 // enrollments, credentials, devices, api-tokens) as agent-native MCP tools over
 // stdio, authenticated with a member API token.
