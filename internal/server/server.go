@@ -1,4 +1,4 @@
-// Package server implements the qualithm operator MCP server: the platform
+// Package server implements the Qualithm operator MCP server: the platform
 // provisioning surface (authorities, enrollments, credentials, devices, API
 // tokens) exposed as agent-native MCP tools.
 //

@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/qualithm/operator-mcp)](https://goreportcard.com/report/github.com/qualithm/operator-mcp)
 -->
 
-Go MCP server for agent-native provisioning of the qualithm platform. It exposes the platform
+Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
 management API — authorities, enrollments, credentials, devices, and API tokens — as MCP tools over
 stdio, backed by the same `operator` client that powers the `qualithm` CLI, so the human and agent
 surfaces never diverge.
