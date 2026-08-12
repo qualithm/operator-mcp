@@ -57,11 +57,19 @@ func newServerWith(newClient func(dryRun bool) (*operator.Client, error)) *Serve
 
 // MCPServer builds the MCP server with every provisioning tool registered.
 func (s *Server) MCPServer(version string) *mcp.Server {
+	// Logging is deprecated in protocol 2026-07-28 (SEP-2577) and this server
+	// never emits notifications/message (logs go to stderr), so don't advertise
+	// the capability: a modern-era client that sees it sends logging/setLevel
+	// at connect, which the new revision rejects. The tools capability is still
+	// inferred from the registered tools; listChanged stays false because the
+	// tool set is static for the life of the process.
 	srv := mcp.NewServer(&mcp.Implementation{
 		Name:    "qualithm-operator",
 		Title:   "Qualithm Operator",
 		Version: version,
-	}, nil)
+	}, &mcp.ServerOptions{Capabilities: &mcp.ServerCapabilities{
+		Tools: &mcp.ToolCapabilities{ListChanged: false},
+	}})
 	s.registerAuthorities(srv)
 	s.registerEnrollments(srv)
 	s.registerCredentials(srv)
