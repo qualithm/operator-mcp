@@ -379,3 +379,74 @@ func TestAPIErrorFailsEveryTool(t *testing.T) {
 		}
 	}
 }
+
+// connect wires a client session to the server over an in-memory transport and
+// returns it; the session is closed at test cleanup.
+func connect(t *testing.T, s *Server) *mcp.ClientSession {
+	t.Helper()
+	serverT, clientT := mcp.NewInMemoryTransports()
+	srv := s.MCPServer("test")
+	if _, err := srv.Connect(ctx(), serverT, nil); err != nil {
+		t.Fatalf("server connect: %v", err)
+	}
+	client := mcp.NewClient(&mcp.Implementation{Name: "test-client", Version: "test"}, nil)
+	session, err := client.Connect(ctx(), clientT, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	t.Cleanup(func() { _ = session.Close() })
+	return session
+}
+
+// TestNewProtocolNegotiation proves the stateless 2026-07-28 revision works
+// end to end against the tool envelope contract: version negotiation, tool
+// listing, and success, dry-run, and coded-failure call paths.
+func TestNewProtocolNegotiation(t *testing.T) {
+	t.Run("success and dry-run", func(t *testing.T) {
+		rec := &record{}
+		session := connect(t, testServer(t, 200, envelope(`{"id":"dev_1"}`), rec))
+		if got := session.InitializeResult().ProtocolVersion; got != "2026-07-28" {
+			t.Fatalf("negotiated protocol %q, want 2026-07-28", got)
+		}
+		listed, err := session.ListTools(ctx(), nil)
+		if err != nil || len(listed.Tools) == 0 {
+			t.Fatalf("tools/list: %d tools, err=%v", len(listed.Tools), err)
+		}
+
+		call, err := session.CallTool(ctx(), &mcp.CallToolParams{
+			Name:      "get_device",
+			Arguments: map[string]any{"deviceId": "dev_1"},
+		})
+		if err != nil || call.IsError {
+			t.Fatalf("get_device: err=%v isError=%v", err, call.IsError)
+		}
+		if rec.method != http.MethodGet || rec.path != "/devices/dev_1" {
+			t.Fatalf("unexpected request %s %s", rec.method, rec.path)
+		}
+
+		dry, err := session.CallTool(ctx(), &mcp.CallToolParams{
+			Name:      "create_device",
+			Arguments: map[string]any{"spaceId": "sp_1", "dryRun": true},
+		})
+		if err != nil || dry.IsError {
+			t.Fatalf("create_device dry-run: err=%v isError=%v", err, dry.IsError)
+		}
+		if rec.method != http.MethodGet {
+			t.Fatalf("dry-run must not send a mutation, sent %s %s", rec.method, rec.path)
+		}
+	})
+
+	t.Run("coded failure", func(t *testing.T) {
+		session := connect(t, testServer(t, 404, `{"message":"gone"}`, nil))
+		call, err := session.CallTool(ctx(), &mcp.CallToolParams{
+			Name:      "get_device",
+			Arguments: map[string]any{"deviceId": "dev_1"},
+		})
+		if err != nil {
+			t.Fatalf("coded failures must not surface as protocol errors: %v", err)
+		}
+		if !call.IsError {
+			t.Fatal("want IsError result for a 404")
+		}
+	})
+}
