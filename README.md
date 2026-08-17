@@ -1,10 +1,7 @@
 # Operator MCP
 
-<!-- TODO: uncomment badges after first publish
 [![CI](https://github.com/qualithm/operator-mcp/actions/workflows/ci.yaml/badge.svg)](https://github.com/qualithm/operator-mcp/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/qualithm/operator-mcp/graph/badge.svg)](https://codecov.io/gh/qualithm/operator-mcp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/qualithm/operator-mcp)](https://goreportcard.com/report/github.com/qualithm/operator-mcp)
--->
 
 Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
 management API — authorities, enrollments, credentials, devices, and API tokens — as MCP tools over
