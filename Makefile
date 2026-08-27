@@ -65,6 +65,10 @@ tidy: ## Tidy go.mod
 tidy-check: ## Verify go.mod is tidy
 	go mod tidy -diff
 
+.PHONY: coverage-check
+coverage-check: ## Fail when platform management routes drift from MCP tool coverage
+	go run ./cmd/coverage-check
+
 .PHONY: audit
 audit: ## Run vulnerability scan (govulncheck)
 	govulncheck $(PKG)
