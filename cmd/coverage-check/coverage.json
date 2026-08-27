@@ -423,27 +423,27 @@
     {
       "method": "GET",
       "path": "/spaces",
-      "issue": 121
+      "tool": "list_spaces"
     },
     {
       "method": "POST",
       "path": "/spaces",
-      "issue": 121
+      "tool": "create_space"
     },
     {
       "method": "DELETE",
       "path": "/spaces/:spaceId",
-      "issue": 121
+      "tool": "delete_space"
     },
     {
       "method": "GET",
       "path": "/spaces/:spaceId",
-      "issue": 121
+      "tool": "get_space"
     },
     {
       "method": "PATCH",
       "path": "/spaces/:spaceId",
-      "issue": 121
+      "tool": "update_space"
     },
     {
       "method": "GET",
