@@ -154,14 +154,25 @@ func TestRunSchemaViolation(t *testing.T) {
 	}
 }
 
-func TestRunMissingPlatform(t *testing.T) {
+func TestRunSkipsMissingPlatform(t *testing.T) {
 	t.Parallel()
 	fx := writeFixture(t, map[string]ledgerEntry{
 		"GET /devices":                 {Tool: "list_devices"},
 		"POST /devices/:deviceId/park": {Tool: "park_device"},
 	})
-	if err := run(filepath.Join(fx.platform, "nope"), fx.ledger, fx.server); err == nil {
-		t.Fatal("expected missing-platform error, got nil")
+	// Routes cannot be scanned, but the tool registry can — the run succeeds.
+	if err := run(filepath.Join(fx.platform, "nope"), fx.ledger, fx.server); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+}
+
+func TestRunErrorsWhenNeitherPresent(t *testing.T) {
+	t.Parallel()
+	fx := writeFixture(t, map[string]ledgerEntry{
+		"GET /devices": {Tool: "list_devices"},
+	})
+	if err := run(filepath.Join(fx.platform, "nope"), fx.ledger, filepath.Join(fx.server, "nope")); err == nil {
+		t.Fatal("expected neither-input error, got nil")
 	}
 }
 
