@@ -1,11 +1,12 @@
 // Command coverage-check fails when the platform management API's routes drift
 // from the MCP tool surface: a route ships without a tool counterpart, without a
-// recorded no-tool rationale, or without a gap-issue reference in
-// internal/server/coverage.json. Run from the repo root; -platform points at a
-// platform checkout (CI clones qualithm/platform alongside).
+// recorded no-tool rationale, or without a gap-issue reference in the coverage
+// ledger (coverage.json, embedded). -platform points at a platform checkout;
+// platform's CI runs this via `go run` against its own working tree.
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,9 +17,15 @@ import (
 	"strings"
 )
 
+// embeddedLedger is the checked-in coverage ledger, so the binary stays
+// self-contained when run via `go run github.com/qualithm/operator-mcp/cmd/coverage-check@<ref>`.
+//
+//go:embed coverage.json
+var embeddedLedger []byte
+
 var (
 	platformDir = flag.String("platform", "../platform", "path to a qualithm/platform checkout")
-	ledgerPath  = flag.String("ledger", "internal/server/coverage.json", "path to the coverage ledger")
+	ledgerPath  = flag.String("ledger", "", "path to a coverage ledger (default: the embedded one)")
 )
 
 // ledgerEntry classifies one platform management route. Exactly one of Tool,
@@ -55,14 +62,37 @@ func main() {
 }
 
 func run(platform, ledgerFile, serverDir string) error {
-	scanned, err := scanRoutes(platform)
-	if err != nil {
-		return err
+	// Each side of the check runs only where its input exists: platform CI has
+	// the routes but not this repo's tool registry; a local run inside
+	// operator-mcp has the registry and, with a sibling checkout, the routes.
+	_, perr := os.Stat(filepath.Join(platform, "src", "management"))
+	_, terr := os.Stat(serverDir)
+	if perr != nil && terr != nil {
+		return fmt.Errorf("neither platform routes (%s) nor a tool registry (%s) found", platform, serverDir)
 	}
-	tools, err := scanTools(serverDir)
-	if err != nil {
-		return err
+
+	var scanned []ledgerEntry
+	if perr == nil {
+		var err error
+		scanned, err = scanRoutes(platform)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "coverage-check: no platform routes at %s; skipping route checks\n", platform)
 	}
+
+	var tools map[string]bool
+	if terr == nil {
+		var err error
+		tools, err = scanTools(serverDir)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "coverage-check: no tool registry at %s; skipping tool checks\n", serverDir)
+	}
+
 	lg, err := loadLedger(ledgerFile)
 	if err != nil {
 		return err
@@ -90,10 +120,10 @@ func run(platform, ledgerFile, serverDir string) error {
 		if set != 1 {
 			problems = append(problems, fmt.Sprintf("%s: set exactly one of tool, noTool, issue", key))
 		}
-		if !scannedKeys[key] {
+		if scanned != nil && !scannedKeys[key] {
 			problems = append(problems, fmt.Sprintf("stale ledger entry (route not in platform): %s", key))
 		}
-		if e.Tool != "" && !tools[e.Tool] {
+		if e.Tool != "" && tools != nil && !tools[e.Tool] {
 			problems = append(problems, fmt.Sprintf("ledger tool %q (%s) is not a registered MCP tool", e.Tool, key))
 		}
 	}
@@ -187,16 +217,20 @@ func scanTools(dir string) (map[string]bool, error) {
 }
 
 func loadLedger(path string) (ledger, error) {
-	raw, err := os.ReadFile(path) // #nosec G304 -- the ledger path is a repo-owned flag default
-	if err != nil {
-		return ledger{}, err
+	raw := embeddedLedger
+	if path != "" {
+		var err error
+		raw, err = os.ReadFile(path) // #nosec G304 -- the ledger path is a repo-owned flag override
+		if err != nil {
+			return ledger{}, err
+		}
 	}
 	var lg ledger
 	if err := json.Unmarshal(raw, &lg); err != nil {
-		return ledger{}, fmt.Errorf("parsing %s: %w", path, err)
+		return ledger{}, fmt.Errorf("parsing ledger: %w", err)
 	}
 	if len(lg.Routes) == 0 {
-		return ledger{}, fmt.Errorf("%s has no routes", path)
+		return ledger{}, fmt.Errorf("ledger has no routes")
 	}
 	return lg, nil
 }
