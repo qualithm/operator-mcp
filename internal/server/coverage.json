@@ -1,0 +1,559 @@
+{
+  "routes": [
+    {
+      "method": "DELETE",
+      "path": "/account",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/account",
+      "issue": 128
+    },
+    {
+      "method": "PATCH",
+      "path": "/account",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/account/communication-preferences",
+      "issue": 128
+    },
+    {
+      "method": "PATCH",
+      "path": "/account/communication-preferences",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/api-tokens",
+      "tool": "list_api_tokens"
+    },
+    {
+      "method": "POST",
+      "path": "/api-tokens",
+      "tool": "create_api_token"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api-tokens/:tokenId",
+      "tool": "revoke_api_token"
+    },
+    {
+      "method": "GET",
+      "path": "/audit",
+      "issue": 127
+    },
+    {
+      "method": "GET",
+      "path": "/authorities",
+      "tool": "list_authorities"
+    },
+    {
+      "method": "POST",
+      "path": "/authorities",
+      "tool": "create_authority"
+    },
+    {
+      "method": "DELETE",
+      "path": "/authorities/:authorityId",
+      "tool": "revoke_authority"
+    },
+    {
+      "method": "GET",
+      "path": "/automations",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations",
+      "issue": 124
+    },
+    {
+      "method": "DELETE",
+      "path": "/automations/:automationId",
+      "issue": 124
+    },
+    {
+      "method": "GET",
+      "path": "/automations/:automationId",
+      "issue": 124
+    },
+    {
+      "method": "PATCH",
+      "path": "/automations/:automationId",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/:automationId/disable",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/:automationId/enable",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/:automationId/run",
+      "issue": 124
+    },
+    {
+      "method": "GET",
+      "path": "/automations/:automationId/runs",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/:automationId/trigger-secret",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/from-template",
+      "issue": 124
+    },
+    {
+      "method": "POST",
+      "path": "/automations/trigger",
+      "issue": 124
+    },
+    {
+      "method": "PATCH",
+      "path": "/billing/addons",
+      "issue": 129
+    },
+    {
+      "method": "POST",
+      "path": "/billing/checkout-session",
+      "issue": 129
+    },
+    {
+      "method": "POST",
+      "path": "/billing/portal-session",
+      "issue": 129
+    },
+    {
+      "method": "POST",
+      "path": "/billing/stripe-webhook",
+      "noTool": "webhook"
+    },
+    {
+      "method": "GET",
+      "path": "/billing/summary",
+      "issue": 129
+    },
+    {
+      "method": "PATCH",
+      "path": "/billing/tier",
+      "issue": 129
+    },
+    {
+      "method": "POST",
+      "path": "/billing/tier/preview",
+      "issue": 129
+    },
+    {
+      "method": "GET",
+      "path": "/callback/github",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/callback/google",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/callback/microsoft",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/capabilities",
+      "issue": 128
+    },
+    {
+      "method": "PATCH",
+      "path": "/capabilities/:capabilityId",
+      "issue": 128
+    },
+    {
+      "method": "DELETE",
+      "path": "/cookies/consent",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/cookies/consent",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "POST",
+      "path": "/cookies/consent",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/dashboards",
+      "issue": 125
+    },
+    {
+      "method": "POST",
+      "path": "/dashboards",
+      "issue": 125
+    },
+    {
+      "method": "DELETE",
+      "path": "/dashboards/:dashboardId",
+      "issue": 125
+    },
+    {
+      "method": "GET",
+      "path": "/dashboards/:dashboardId",
+      "issue": 125
+    },
+    {
+      "method": "PATCH",
+      "path": "/dashboards/:dashboardId",
+      "issue": 125
+    },
+    {
+      "method": "GET",
+      "path": "/devices",
+      "tool": "list_devices"
+    },
+    {
+      "method": "POST",
+      "path": "/devices",
+      "tool": "create_device"
+    },
+    {
+      "method": "DELETE",
+      "path": "/devices/:deviceId",
+      "tool": "delete_device"
+    },
+    {
+      "method": "GET",
+      "path": "/devices/:deviceId",
+      "tool": "get_device"
+    },
+    {
+      "method": "PATCH",
+      "path": "/devices/:deviceId",
+      "tool": "update_device"
+    },
+    {
+      "method": "GET",
+      "path": "/devices/:deviceId/automation-templates",
+      "issue": 124
+    },
+    {
+      "method": "GET",
+      "path": "/devices/:deviceId/capabilities",
+      "issue": 126
+    },
+    {
+      "method": "GET",
+      "path": "/devices/:deviceId/commands",
+      "issue": 126
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/commands",
+      "issue": 126
+    },
+    {
+      "method": "GET",
+      "path": "/devices/:deviceId/credentials",
+      "tool": "list_credentials"
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/credentials",
+      "tool": "mint_credential"
+    },
+    {
+      "method": "DELETE",
+      "path": "/devices/:deviceId/credentials/:credentialId",
+      "tool": "revoke_credential"
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/credentials/:credentialId/rotate",
+      "tool": "rotate_credential"
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/credentials/cert",
+      "tool": "issue_cert"
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/park",
+      "issue": 126
+    },
+    {
+      "method": "POST",
+      "path": "/devices/:deviceId/unpark",
+      "issue": 126
+    },
+    {
+      "method": "GET",
+      "path": "/enrollments",
+      "tool": "list_enrollments"
+    },
+    {
+      "method": "POST",
+      "path": "/enrollments",
+      "tool": "create_enrollment"
+    },
+    {
+      "method": "DELETE",
+      "path": "/enrollments/:enrollmentId",
+      "tool": "revoke_enrollment"
+    },
+    {
+      "method": "GET",
+      "path": "/events/stream",
+      "issue": 127
+    },
+    {
+      "method": "POST",
+      "path": "/feedback",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "noTool": "infra"
+    },
+    {
+      "method": "GET",
+      "path": "/healthz",
+      "noTool": "infra"
+    },
+    {
+      "method": "GET",
+      "path": "/invites",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "DELETE",
+      "path": "/invites/:inviteId",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices",
+      "issue": 129
+    },
+    {
+      "method": "GET",
+      "path": "/oauth/github",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/oauth/google",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/oauth/microsoft",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "POST",
+      "path": "/otps",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "POST",
+      "path": "/provision/claim",
+      "noTool": "device-provisioning"
+    },
+    {
+      "method": "POST",
+      "path": "/provision/credentials/cert",
+      "noTool": "device-provisioning"
+    },
+    {
+      "method": "DELETE",
+      "path": "/push/subscriptions",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "POST",
+      "path": "/push/subscriptions",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/push/vapid-key",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/ready",
+      "noTool": "infra"
+    },
+    {
+      "method": "GET",
+      "path": "/roles",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/sessions",
+      "issue": 128
+    },
+    {
+      "method": "DELETE",
+      "path": "/sessions/:sessionId",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/sessions/:sessionId",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/spaces",
+      "issue": 121
+    },
+    {
+      "method": "POST",
+      "path": "/spaces",
+      "issue": 121
+    },
+    {
+      "method": "DELETE",
+      "path": "/spaces/:spaceId",
+      "issue": 121
+    },
+    {
+      "method": "GET",
+      "path": "/spaces/:spaceId",
+      "issue": 121
+    },
+    {
+      "method": "PATCH",
+      "path": "/spaces/:spaceId",
+      "issue": 121
+    },
+    {
+      "method": "GET",
+      "path": "/spaces/:spaceId/devices",
+      "tool": "list_space_devices"
+    },
+    {
+      "method": "GET",
+      "path": "/teams",
+      "issue": 122
+    },
+    {
+      "method": "POST",
+      "path": "/teams",
+      "issue": 122
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId",
+      "issue": 122
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId",
+      "issue": 122
+    },
+    {
+      "method": "PATCH",
+      "path": "/teams/:teamId",
+      "issue": 122
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId/device-state",
+      "issue": 122
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId/invites",
+      "issue": 123
+    },
+    {
+      "method": "POST",
+      "path": "/teams/:teamId/invites",
+      "issue": 123
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId/invites/:inviteId",
+      "issue": 123
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId/members",
+      "issue": 123
+    },
+    {
+      "method": "POST",
+      "path": "/teams/:teamId/members",
+      "issue": 123
+    },
+    {
+      "method": "DELETE",
+      "path": "/teams/:teamId/members/:memberId",
+      "issue": 123
+    },
+    {
+      "method": "GET",
+      "path": "/teams/:teamId/members/:memberId",
+      "issue": 123
+    },
+    {
+      "method": "PATCH",
+      "path": "/teams/:teamId/members/:memberId",
+      "issue": 123
+    },
+    {
+      "method": "GET",
+      "path": "/telemetry",
+      "issue": 127
+    },
+    {
+      "method": "GET",
+      "path": "/unsubscribe",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "POST",
+      "path": "/unsubscribe",
+      "noTool": "app-ui"
+    },
+    {
+      "method": "GET",
+      "path": "/usage",
+      "issue": 127
+    },
+    {
+      "method": "GET",
+      "path": "/workspace",
+      "issue": 128
+    },
+    {
+      "method": "PATCH",
+      "path": "/workspace",
+      "issue": 128
+    },
+    {
+      "method": "GET",
+      "path": "/zones/:zone/spaces",
+      "issue": 128
+    }
+  ]
+}
