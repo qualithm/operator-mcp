@@ -48,26 +48,26 @@ type RevokeCredentialInput struct {
 }
 
 func (s *Server) registerCredentials(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_credentials",
 		Description: "List the credentials (tokens and certificates) for a device.",
-	}, s.listCredentials)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listCredentials, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "mint_credential",
 		Description: "Mint a token credential for a device. The plaintext secret is returned once.",
-	}, s.mintCredential)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.mintCredential, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "issue_cert",
 		Description: "Issue an mTLS certificate credential for a device from a CSR. The certificate is returned once.",
-	}, s.issueCert)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.issueCert, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "rotate_credential",
 		Description: "Rotate a device credential, optionally revoking the old one. The new secret is returned once.",
-	}, s.rotateCredential)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.rotateCredential, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "revoke_credential",
 		Description: "Revoke a device credential by id.",
-	}, s.revokeCredential)
+	}, s.revokeCredential, true)
 }
 
 func (s *Server) listCredentials(ctx context.Context, _ *mcp.CallToolRequest, in ListCredentialsInput) (*mcp.CallToolResult, Result, error) {
