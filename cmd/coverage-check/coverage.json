@@ -453,32 +453,32 @@
     {
       "method": "GET",
       "path": "/teams",
-      "issue": 122
+      "tool": "list_teams"
     },
     {
       "method": "POST",
       "path": "/teams",
-      "issue": 122
+      "tool": "create_team"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "delete_team"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "get_team"
     },
     {
       "method": "PATCH",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "update_team"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/device-state",
-      "issue": 122
+      "tool": "get_team_device_state"
     },
     {
       "method": "GET",

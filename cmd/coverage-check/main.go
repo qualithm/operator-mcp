@@ -48,9 +48,10 @@ var (
 	// http.post( with an optional run of // comment lines, then the path
 	// literal on its own line — the shape every platform route file uses.
 	routeRe = regexp.MustCompile(`(?s)http\.(get|post|patch|delete)\(\s*(?://[^\n]*\s*)*"(/[^"]*)"`)
-	// mcp.AddTool(srv, &mcp.Tool{ Name: "x", ... — registered tools only, so
-	// server names in tests and literals elsewhere never count.
-	toolRe = regexp.MustCompile(`(?s)AddTool\(srv,\s*&mcp\.Tool\{\s*Name:\s*"([a-z_]+)"`)
+	// addTool(s, srv, &mcp.Tool{ Name: "x", ... — registered tools only, so
+	// server names in tests and literals elsewhere never count. Registrations
+	// go through the server's addTool helper, which records contract metadata.
+	toolRe = regexp.MustCompile(`(?s)addTool\(s,\s*srv,\s*&mcp\.Tool\{\s*Name:\s*"([a-z_]+)"`)
 )
 
 func main() {
