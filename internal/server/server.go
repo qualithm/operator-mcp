@@ -113,6 +113,7 @@ func (s *Server) MCPServer(version string) *mcp.Server {
 	s.registerCommands(srv)
 	s.registerObservability(srv)
 	s.registerWorkspace(srv)
+	s.registerAutomations(srv)
 	s.registerTokens(srv)
 	return srv
 }
