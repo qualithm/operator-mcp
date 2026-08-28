@@ -253,17 +253,17 @@
     {
       "method": "GET",
       "path": "/devices/:deviceId/capabilities",
-      "issue": 126
+      "tool": "get_device_capabilities"
     },
     {
       "method": "GET",
       "path": "/devices/:deviceId/commands",
-      "issue": 126
+      "tool": "list_device_commands"
     },
     {
       "method": "POST",
       "path": "/devices/:deviceId/commands",
-      "issue": 126
+      "tool": "send_device_command"
     },
     {
       "method": "GET",
@@ -293,12 +293,12 @@
     {
       "method": "POST",
       "path": "/devices/:deviceId/park",
-      "issue": 126
+      "tool": "park_device"
     },
     {
       "method": "POST",
       "path": "/devices/:deviceId/unpark",
-      "issue": 126
+      "tool": "unpark_device"
     },
     {
       "method": "GET",
