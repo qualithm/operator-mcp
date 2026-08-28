@@ -3,27 +3,27 @@
     {
       "method": "DELETE",
       "path": "/account",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/account",
-      "issue": 128
+      "tool": "get_account"
     },
     {
       "method": "PATCH",
       "path": "/account",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/account/communication-preferences",
-      "issue": 128
+      "tool": "get_communication_preferences"
     },
     {
       "method": "PATCH",
       "path": "/account/communication-preferences",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
@@ -173,12 +173,12 @@
     {
       "method": "GET",
       "path": "/capabilities",
-      "issue": 128
+      "tool": "list_capabilities"
     },
     {
       "method": "PATCH",
       "path": "/capabilities/:capabilityId",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "DELETE",
@@ -403,22 +403,22 @@
     {
       "method": "GET",
       "path": "/roles",
-      "issue": 128
+      "tool": "list_roles"
     },
     {
       "method": "GET",
       "path": "/sessions",
-      "issue": 128
+      "tool": "list_sessions"
     },
     {
       "method": "DELETE",
       "path": "/sessions/:sessionId",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/sessions/:sessionId",
-      "issue": 128
+      "tool": "get_session"
     },
     {
       "method": "GET",
@@ -543,17 +543,17 @@
     {
       "method": "GET",
       "path": "/workspace",
-      "issue": 128
+      "tool": "get_workspace"
     },
     {
       "method": "PATCH",
       "path": "/workspace",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/zones/:zone/spaces",
-      "issue": 128
+      "tool": "list_zone_spaces"
     }
   ]
 }
