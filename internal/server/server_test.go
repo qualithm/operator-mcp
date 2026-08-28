@@ -129,6 +129,33 @@ func TestListEnrollmentsDevicesTokens(t *testing.T) {
 	}
 }
 
+func TestListSpaces(t *testing.T) {
+	rec := &record{}
+	s := testServer(t, 200, envelope(`{"current":1,"last":1,"items":[{"id":"sp_1","zone":"de-fra-a"}]}`), rec)
+	_, out, err := s.listSpaces(ctx(), nil, ListSpacesInput{Page: 2, Limit: 5})
+	if err != nil || !out.OK {
+		t.Fatalf("out=%+v err=%v", out, err)
+	}
+	if rec.method != http.MethodGet || rec.path != "/spaces" {
+		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
+	}
+	if !strings.Contains(rec.query, "page=2") || !strings.Contains(rec.query, "limit=5") {
+		t.Fatalf("missing page params: %q", rec.query)
+	}
+}
+
+func TestGetSpace(t *testing.T) {
+	rec := &record{}
+	s := testServer(t, 200, envelope(`{"id":"sp_1","name":"edge"}`), rec)
+	_, out, err := s.getSpace(ctx(), nil, GetSpaceInput{SpaceID: "sp_1"})
+	if err != nil || !out.OK {
+		t.Fatalf("out=%+v err=%v", out, err)
+	}
+	if rec.path != "/spaces/sp_1" {
+		t.Fatalf("path = %q", rec.path)
+	}
+}
+
 func TestListCredentialsAndGetDevice(t *testing.T) {
 	rec := &record{}
 	s := testServer(t, 200, envelope(`[{"id":"cred_1"}]`), rec)
@@ -206,6 +233,18 @@ func TestMutationsApplied(t *testing.T) {
 		}},
 		{"delete_device", func() Result {
 			_, o, _ := s.deleteDevice(ctx(), nil, DeleteDeviceInput{DeviceID: "dev_1"})
+			return o
+		}},
+		{"create_space", func() Result {
+			_, o, _ := s.createSpace(ctx(), nil, CreateSpaceInput{Zone: "de-fra-a"})
+			return o
+		}},
+		{"update_space", func() Result {
+			_, o, _ := s.updateSpace(ctx(), nil, UpdateSpaceInput{SpaceID: "sp_1", Name: "hall"})
+			return o
+		}},
+		{"delete_space", func() Result {
+			_, o, _ := s.deleteSpace(ctx(), nil, DeleteSpaceInput{SpaceID: "sp_1"})
 			return o
 		}},
 		{"create_api_token", func() Result {
@@ -330,6 +369,21 @@ func allHandlers(s *Server) []handlerCall {
 		}},
 		{"delete_device", func() (*mcp.CallToolResult, Result, error) {
 			return s.deleteDevice(ctx(), nil, DeleteDeviceInput{DeviceID: "dev_1"})
+		}},
+		{"list_spaces", func() (*mcp.CallToolResult, Result, error) {
+			return s.listSpaces(ctx(), nil, ListSpacesInput{})
+		}},
+		{"get_space", func() (*mcp.CallToolResult, Result, error) {
+			return s.getSpace(ctx(), nil, GetSpaceInput{SpaceID: "sp_1"})
+		}},
+		{"create_space", func() (*mcp.CallToolResult, Result, error) {
+			return s.createSpace(ctx(), nil, CreateSpaceInput{Zone: "de-fra-a"})
+		}},
+		{"update_space", func() (*mcp.CallToolResult, Result, error) {
+			return s.updateSpace(ctx(), nil, UpdateSpaceInput{SpaceID: "sp_1", Name: "hall"})
+		}},
+		{"delete_space", func() (*mcp.CallToolResult, Result, error) {
+			return s.deleteSpace(ctx(), nil, DeleteSpaceInput{SpaceID: "sp_1"})
 		}},
 		{"list_api_tokens", func() (*mcp.CallToolResult, Result, error) {
 			return s.listAPITokens(ctx(), nil, ListAPITokensInput{})

@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/modelcontextprotocol/go-sdk v1.7.0
-	github.com/qualithm/operator-go v0.1.0
+	github.com/qualithm/operator-go v0.1.1-0.20260828005403-a1ab19984457
 )
 
 require (
