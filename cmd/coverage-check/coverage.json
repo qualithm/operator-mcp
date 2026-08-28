@@ -483,42 +483,42 @@
     {
       "method": "GET",
       "path": "/teams/:teamId/invites",
-      "issue": 123
+      "tool": "list_team_invites"
     },
     {
       "method": "POST",
       "path": "/teams/:teamId/invites",
-      "issue": 123
+      "tool": "create_team_invite"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId/invites/:inviteId",
-      "issue": 123
+      "tool": "revoke_team_invite"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/members",
-      "issue": 123
+      "tool": "list_team_members"
     },
     {
       "method": "POST",
       "path": "/teams/:teamId/members",
-      "issue": 123
+      "tool": "add_team_member"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "remove_team_member"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "get_team_member"
     },
     {
       "method": "PATCH",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "update_team_member"
     },
     {
       "method": "GET",
