@@ -63,62 +63,62 @@
     {
       "method": "GET",
       "path": "/automations",
-      "issue": 124
+      "tool": "list_automations"
     },
     {
       "method": "POST",
       "path": "/automations",
-      "issue": 124
+      "tool": "create_automation"
     },
     {
       "method": "DELETE",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "delete_automation"
     },
     {
       "method": "GET",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "get_automation"
     },
     {
       "method": "PATCH",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "update_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/disable",
-      "issue": 124
+      "tool": "disable_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/enable",
-      "issue": 124
+      "tool": "enable_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/run",
-      "issue": 124
+      "tool": "run_automation"
     },
     {
       "method": "GET",
       "path": "/automations/:automationId/runs",
-      "issue": 124
+      "tool": "list_automation_runs"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/trigger-secret",
-      "issue": 124
+      "tool": "create_automation_trigger_secret"
     },
     {
       "method": "POST",
       "path": "/automations/from-template",
-      "issue": 124
+      "tool": "create_automation_from_template"
     },
     {
       "method": "POST",
       "path": "/automations/trigger",
-      "issue": 124
+      "tool": "trigger_automation"
     },
     {
       "method": "PATCH",
@@ -248,7 +248,7 @@
     {
       "method": "GET",
       "path": "/devices/:deviceId/automation-templates",
-      "issue": 124
+      "tool": "list_automation_templates"
     },
     {
       "method": "GET",
