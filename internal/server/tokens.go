@@ -28,18 +28,18 @@ type RevokeAPITokenInput struct {
 }
 
 func (s *Server) registerTokens(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_api_tokens",
 		Description: "List member API tokens for the token's team (metadata only; secrets are never listed).",
-	}, s.listAPITokens)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listAPITokens, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "create_api_token",
 		Description: "Mint a member API token. The plaintext secret is returned once.",
-	}, s.createAPIToken)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.createAPIToken, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "revoke_api_token",
 		Description: "Revoke a member API token by id.",
-	}, s.revokeAPIToken)
+	}, s.revokeAPIToken, true)
 }
 
 func (s *Server) listAPITokens(ctx context.Context, _ *mcp.CallToolRequest, in ListAPITokensInput) (*mcp.CallToolResult, Result, error) {

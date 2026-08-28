@@ -3,27 +3,27 @@
     {
       "method": "DELETE",
       "path": "/account",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/account",
-      "issue": 128
+      "tool": "get_account"
     },
     {
       "method": "PATCH",
       "path": "/account",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/account/communication-preferences",
-      "issue": 128
+      "tool": "get_communication_preferences"
     },
     {
       "method": "PATCH",
       "path": "/account/communication-preferences",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
@@ -43,7 +43,7 @@
     {
       "method": "GET",
       "path": "/audit",
-      "issue": 127
+      "tool": "get_audit_log"
     },
     {
       "method": "GET",
@@ -63,77 +63,77 @@
     {
       "method": "GET",
       "path": "/automations",
-      "issue": 124
+      "tool": "list_automations"
     },
     {
       "method": "POST",
       "path": "/automations",
-      "issue": 124
+      "tool": "create_automation"
     },
     {
       "method": "DELETE",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "delete_automation"
     },
     {
       "method": "GET",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "get_automation"
     },
     {
       "method": "PATCH",
       "path": "/automations/:automationId",
-      "issue": 124
+      "tool": "update_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/disable",
-      "issue": 124
+      "tool": "disable_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/enable",
-      "issue": 124
+      "tool": "enable_automation"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/run",
-      "issue": 124
+      "tool": "run_automation"
     },
     {
       "method": "GET",
       "path": "/automations/:automationId/runs",
-      "issue": 124
+      "tool": "list_automation_runs"
     },
     {
       "method": "POST",
       "path": "/automations/:automationId/trigger-secret",
-      "issue": 124
+      "tool": "create_automation_trigger_secret"
     },
     {
       "method": "POST",
       "path": "/automations/from-template",
-      "issue": 124
+      "tool": "create_automation_from_template"
     },
     {
       "method": "POST",
       "path": "/automations/trigger",
-      "issue": 124
+      "tool": "trigger_automation"
     },
     {
       "method": "PATCH",
       "path": "/billing/addons",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/checkout-session",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/portal-session",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
@@ -143,17 +143,17 @@
     {
       "method": "GET",
       "path": "/billing/summary",
-      "issue": 129
+      "tool": "get_billing_summary"
     },
     {
       "method": "PATCH",
       "path": "/billing/tier",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/tier/preview",
-      "issue": 129
+      "tool": "preview_tier_change"
     },
     {
       "method": "GET",
@@ -173,12 +173,12 @@
     {
       "method": "GET",
       "path": "/capabilities",
-      "issue": 128
+      "tool": "list_capabilities"
     },
     {
       "method": "PATCH",
       "path": "/capabilities/:capabilityId",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "DELETE",
@@ -198,27 +198,27 @@
     {
       "method": "GET",
       "path": "/dashboards",
-      "issue": 125
+      "tool": "list_dashboards"
     },
     {
       "method": "POST",
       "path": "/dashboards",
-      "issue": 125
+      "tool": "create_dashboard"
     },
     {
       "method": "DELETE",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "delete_dashboard"
     },
     {
       "method": "GET",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "get_dashboard"
     },
     {
       "method": "PATCH",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "update_dashboard"
     },
     {
       "method": "GET",
@@ -248,22 +248,22 @@
     {
       "method": "GET",
       "path": "/devices/:deviceId/automation-templates",
-      "issue": 124
+      "tool": "list_automation_templates"
     },
     {
       "method": "GET",
       "path": "/devices/:deviceId/capabilities",
-      "issue": 126
+      "tool": "get_device_capabilities"
     },
     {
       "method": "GET",
       "path": "/devices/:deviceId/commands",
-      "issue": 126
+      "tool": "list_device_commands"
     },
     {
       "method": "POST",
       "path": "/devices/:deviceId/commands",
-      "issue": 126
+      "tool": "send_device_command"
     },
     {
       "method": "GET",
@@ -293,12 +293,12 @@
     {
       "method": "POST",
       "path": "/devices/:deviceId/park",
-      "issue": 126
+      "tool": "park_device"
     },
     {
       "method": "POST",
       "path": "/devices/:deviceId/unpark",
-      "issue": 126
+      "tool": "unpark_device"
     },
     {
       "method": "GET",
@@ -318,7 +318,7 @@
     {
       "method": "GET",
       "path": "/events/stream",
-      "issue": 127
+      "tool": "stream_events"
     },
     {
       "method": "POST",
@@ -348,7 +348,7 @@
     {
       "method": "GET",
       "path": "/invoices",
-      "issue": 129
+      "tool": "list_invoices"
     },
     {
       "method": "GET",
@@ -403,22 +403,22 @@
     {
       "method": "GET",
       "path": "/roles",
-      "issue": 128
+      "tool": "list_roles"
     },
     {
       "method": "GET",
       "path": "/sessions",
-      "issue": 128
+      "tool": "list_sessions"
     },
     {
       "method": "DELETE",
       "path": "/sessions/:sessionId",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/sessions/:sessionId",
-      "issue": 128
+      "tool": "get_session"
     },
     {
       "method": "GET",
@@ -453,77 +453,77 @@
     {
       "method": "GET",
       "path": "/teams",
-      "issue": 122
+      "tool": "list_teams"
     },
     {
       "method": "POST",
       "path": "/teams",
-      "issue": 122
+      "tool": "create_team"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "delete_team"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "get_team"
     },
     {
       "method": "PATCH",
       "path": "/teams/:teamId",
-      "issue": 122
+      "tool": "update_team"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/device-state",
-      "issue": 122
+      "tool": "get_team_device_state"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/invites",
-      "issue": 123
+      "tool": "list_team_invites"
     },
     {
       "method": "POST",
       "path": "/teams/:teamId/invites",
-      "issue": 123
+      "tool": "create_team_invite"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId/invites/:inviteId",
-      "issue": 123
+      "tool": "revoke_team_invite"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/members",
-      "issue": 123
+      "tool": "list_team_members"
     },
     {
       "method": "POST",
       "path": "/teams/:teamId/members",
-      "issue": 123
+      "tool": "add_team_member"
     },
     {
       "method": "DELETE",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "remove_team_member"
     },
     {
       "method": "GET",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "get_team_member"
     },
     {
       "method": "PATCH",
       "path": "/teams/:teamId/members/:memberId",
-      "issue": 123
+      "tool": "update_team_member"
     },
     {
       "method": "GET",
       "path": "/telemetry",
-      "issue": 127
+      "tool": "get_telemetry"
     },
     {
       "method": "GET",
@@ -538,22 +538,22 @@
     {
       "method": "GET",
       "path": "/usage",
-      "issue": 127
+      "tool": "get_usage"
     },
     {
       "method": "GET",
       "path": "/workspace",
-      "issue": 128
+      "tool": "get_workspace"
     },
     {
       "method": "PATCH",
       "path": "/workspace",
-      "issue": 128
+      "noTool": "human-only"
     },
     {
       "method": "GET",
       "path": "/zones/:zone/spaces",
-      "issue": 128
+      "tool": "list_zone_spaces"
     }
   ]
 }

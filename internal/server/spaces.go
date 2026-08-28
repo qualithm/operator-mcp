@@ -40,26 +40,26 @@ type DeleteSpaceInput struct {
 }
 
 func (s *Server) registerSpaces(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_spaces",
 		Description: "List spaces for the token's team.",
-	}, s.listSpaces)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listSpaces, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "get_space",
 		Description: "Fetch a single space by id.",
-	}, s.getSpace)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.getSpace, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "create_space",
 		Description: "Create a space in a device zone.",
-	}, s.createSpace)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.createSpace, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "update_space",
 		Description: "Rename a space.",
-	}, s.updateSpace)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.updateSpace, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "delete_space",
 		Description: "Delete a space by id, cascading to its devices.",
-	}, s.deleteSpace)
+	}, s.deleteSpace, true)
 }
 
 func (s *Server) listSpaces(ctx context.Context, _ *mcp.CallToolRequest, in ListSpacesInput) (*mcp.CallToolResult, Result, error) {

@@ -1,0 +1,88 @@
+# Weekly agent-native end-to-end eval (qualithm/operator-mcp#105): drives the
+# documented agent path against sandbox — provision via the MCP tools, claim,
+# connect, publish telemetry, read it back — and files a deduped issue on
+# failure via the vendored report-scan-failure action. The friction log lands
+# in the run summary every time and in the issue body on failure.
+#
+# One-time setup: add a member API token for the sandbox eval team as the
+# QUALITHM_EVAL_API_TOKEN repo secret. While it is unset the harness exits
+# without running and the job stays green — a missing secret is an operational
+# precondition, not a product regression.
+name: Agent Eval
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Mondays at 07:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  eval:
+    name: Claim → connect → telemetry round-trip
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Set up Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: "1.26"
+          # Never true: setup-go's key omits the workflow name, so caching here would
+          # claim CI's key on the default branch with a smaller build footprint. CI
+          # would then hit it, restore too little, and skip saving the fuller cache.
+          cache: false
+      - name: Build the MCP server and harness
+        run: |
+          go build -o "$RUNNER_TEMP/qualithm-mcp" ./cmd/qualithm-mcp
+          go build -o "$RUNNER_TEMP/agent-eval" ./cmd/agent-eval
+      - name: Run the eval
+        id: eval
+        continue-on-error: true
+        env:
+          QUALITHM_API_TOKEN: ${{ secrets.QUALITHM_EVAL_API_TOKEN }}
+          AGENT_EVAL_SERVER_BIN: ${{ runner.temp }}/qualithm-mcp
+        run: |
+          set +e
+          "$RUNNER_TEMP/agent-eval" -out "$RUNNER_TEMP/eval-report.json" | tee "$RUNNER_TEMP/eval-summary.txt"
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/eval-summary.txt" >> "$GITHUB_STEP_SUMMARY"
+          # exit 2 = config missing (no token); the eval never ran, so there is
+          # nothing to report.
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::QUALITHM_EVAL_API_TOKEN is not set; the eval did not run"
+            exit 0
+          fi
+          exit "$code"
+      - name: Load the report body
+        if: steps.eval.outcome == 'failure'
+        id: report
+        run: |
+          {
+            echo "body<<EOF"
+            cat "$RUNNER_TEMP/eval-summary.txt"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Report failure
+        if: steps.eval.outcome == 'failure'
+        uses: ./.github/actions/report-scan-failure
+        with:
+          mode: report
+          title: "${{ github.event.repository.name }}: agent-native end-to-end eval failed"
+          label: agent-eval,off-board
+          body: ${{ steps.report.outputs.body }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve stale failure issue
+        if: steps.eval.outcome == 'success'
+        uses: ./.github/actions/report-scan-failure
+        with:
+          mode: resolve
+          title: "${{ github.event.repository.name }}: agent-native end-to-end eval failed"
+          label: agent-eval,off-board
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fail job if the eval failed
+        if: steps.eval.outcome == 'failure'
+        run: exit 1
