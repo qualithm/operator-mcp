@@ -123,17 +123,17 @@
     {
       "method": "PATCH",
       "path": "/billing/addons",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/checkout-session",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/portal-session",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
@@ -143,17 +143,17 @@
     {
       "method": "GET",
       "path": "/billing/summary",
-      "issue": 129
+      "tool": "get_billing_summary"
     },
     {
       "method": "PATCH",
       "path": "/billing/tier",
-      "issue": 129
+      "noTool": "human-only"
     },
     {
       "method": "POST",
       "path": "/billing/tier/preview",
-      "issue": 129
+      "tool": "preview_tier_change"
     },
     {
       "method": "GET",
@@ -348,7 +348,7 @@
     {
       "method": "GET",
       "path": "/invoices",
-      "issue": 129
+      "tool": "list_invoices"
     },
     {
       "method": "GET",
