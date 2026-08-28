@@ -198,27 +198,27 @@
     {
       "method": "GET",
       "path": "/dashboards",
-      "issue": 125
+      "tool": "list_dashboards"
     },
     {
       "method": "POST",
       "path": "/dashboards",
-      "issue": 125
+      "tool": "create_dashboard"
     },
     {
       "method": "DELETE",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "delete_dashboard"
     },
     {
       "method": "GET",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "get_dashboard"
     },
     {
       "method": "PATCH",
       "path": "/dashboards/:dashboardId",
-      "issue": 125
+      "tool": "update_dashboard"
     },
     {
       "method": "GET",
