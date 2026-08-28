@@ -29,14 +29,14 @@ http.post(
 import "github.com/modelcontextprotocol/go-sdk/mcp"
 
 func (s *Server) registerDevices(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_devices",
 		Description: "List devices.",
-	}, s.listDevices)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listDevices, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "park_device",
 		Description: "Park a device.",
-	}, s.parkDevice)
+	}, s.parkDevice, true)
 }
 `
 )
