@@ -43,7 +43,7 @@
     {
       "method": "GET",
       "path": "/audit",
-      "issue": 127
+      "tool": "get_audit_log"
     },
     {
       "method": "GET",
@@ -318,7 +318,7 @@
     {
       "method": "GET",
       "path": "/events/stream",
-      "issue": 127
+      "tool": "stream_events"
     },
     {
       "method": "POST",
@@ -523,7 +523,7 @@
     {
       "method": "GET",
       "path": "/telemetry",
-      "issue": 127
+      "tool": "get_telemetry"
     },
     {
       "method": "GET",
@@ -538,7 +538,7 @@
     {
       "method": "GET",
       "path": "/usage",
-      "issue": 127
+      "tool": "get_usage"
     },
     {
       "method": "GET",
