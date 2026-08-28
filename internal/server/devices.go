@@ -47,30 +47,30 @@ type DeleteDeviceInput struct {
 }
 
 func (s *Server) registerDevices(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_devices",
 		Description: "List devices for the token's team.",
-	}, s.listDevices)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listDevices, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_space_devices",
 		Description: "List devices scoped to a single space.",
-	}, s.listSpaceDevices)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listSpaceDevices, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "get_device",
 		Description: "Fetch a single device by id.",
-	}, s.getDevice)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.getDevice, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "create_device",
 		Description: "Create a device in a space.",
-	}, s.createDevice)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.createDevice, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "update_device",
 		Description: "Update a device's name or space.",
-	}, s.updateDevice)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.updateDevice, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "delete_device",
 		Description: "Delete a device by id.",
-	}, s.deleteDevice)
+	}, s.deleteDevice, true)
 }
 
 func (s *Server) listDevices(ctx context.Context, _ *mcp.CallToolRequest, in ListDevicesInput) (*mcp.CallToolResult, Result, error) {

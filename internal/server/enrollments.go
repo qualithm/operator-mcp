@@ -29,18 +29,18 @@ type RevokeEnrollmentInput struct {
 }
 
 func (s *Server) registerEnrollments(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_enrollments",
 		Description: "List one-time device enrollment claim codes for the token's team.",
-	}, s.listEnrollments)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listEnrollments, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "create_enrollment",
 		Description: "Create a one-time device enrollment claim code. The plaintext code is returned once.",
-	}, s.createEnrollment)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.createEnrollment, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "revoke_enrollment",
 		Description: "Revoke a device enrollment claim code by id.",
-	}, s.revokeEnrollment)
+	}, s.revokeEnrollment, true)
 }
 
 func (s *Server) listEnrollments(ctx context.Context, _ *mcp.CallToolRequest, in ListEnrollmentsInput) (*mcp.CallToolResult, Result, error) {
