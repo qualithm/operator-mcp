@@ -29,18 +29,18 @@ type RevokeAuthorityInput struct {
 }
 
 func (s *Server) registerAuthorities(srv *mcp.Server) {
-	mcp.AddTool(srv, &mcp.Tool{
+	addTool(s, srv, &mcp.Tool{
 		Name:        "list_authorities",
 		Description: "List device certificate authorities for the token's team.",
-	}, s.listAuthorities)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.listAuthorities, false)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "create_authority",
 		Description: "Create a device certificate authority (platform-generated or BYO).",
-	}, s.createAuthority)
-	mcp.AddTool(srv, &mcp.Tool{
+	}, s.createAuthority, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "revoke_authority",
 		Description: "Revoke a device certificate authority by id.",
-	}, s.revokeAuthority)
+	}, s.revokeAuthority, true)
 }
 
 func (s *Server) listAuthorities(ctx context.Context, _ *mcp.CallToolRequest, in ListAuthoritiesInput) (*mcp.CallToolResult, Result, error) {

@@ -12,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -26,11 +27,39 @@ type Config struct {
 	BaseURL string
 }
 
+// toolMeta records one registered tool so the conformance test can walk the
+// registry and assert the agent contract (dry-run, envelope, stable codes).
+type toolMeta struct {
+	name     string
+	mutating bool
+	input    reflect.Type
+	invoke   func(ctx context.Context, in any) (*mcp.CallToolResult, Result, error)
+}
+
 // Server builds MCP tools backed by the operator client.
 type Server struct {
 	// newClient builds an operator client with the given dry-run setting. main
 	// wires the real constructor from a token; tests inject a fake transport.
 	newClient func(dryRun bool) (*operator.Client, error)
+	// registered lists every tool added through addTool, in registration order.
+	registered []toolMeta
+}
+
+// addTool registers a tool and records its contract metadata. Every tool must
+// register through it — the conformance test fails on a tool the MCP server
+// exposes but the registry never recorded. mutating marks tools that change
+// platform state; their inputs must carry a `dryRun` flag. Package-level
+// because Go methods cannot have type parameters.
+func addTool[In any](s *Server, srv *mcp.Server, t *mcp.Tool, h mcp.ToolHandlerFor[In, Result], mutating bool) {
+	s.registered = append(s.registered, toolMeta{
+		name:     t.Name,
+		mutating: mutating,
+		input:    reflect.TypeFor[In](),
+		invoke: func(ctx context.Context, in any) (*mcp.CallToolResult, Result, error) {
+			return h(ctx, nil, in.(In))
+		},
+	})
+	mcp.AddTool(srv, t, h)
 }
 
 // New returns a [Server] that builds real operator clients from cfg. It fails
@@ -70,6 +99,9 @@ func (s *Server) MCPServer(version string) *mcp.Server {
 	}, &mcp.ServerOptions{Capabilities: &mcp.ServerCapabilities{
 		Tools: &mcp.ToolCapabilities{ListChanged: false},
 	}})
+	// Registration records contract metadata as a side effect; reset so a
+	// second MCPServer call on the same Server doesn't double-count.
+	s.registered = nil
 	s.registerAuthorities(srv)
 	s.registerEnrollments(srv)
 	s.registerCredentials(srv)
