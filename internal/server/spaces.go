@@ -21,6 +21,10 @@ type GetSpaceInput struct {
 
 // CreateSpaceInput creates a space in a device zone. The platform assigns the
 // initial name; rename with update_space.
+//
+// A zone unavailable in the current environment returns the `auth` failure
+// with message `Zone rejects creation in this environment` — treat it as a
+// signaling condition and pick an open zone, not as a fault.
 type CreateSpaceInput struct {
 	Zone   string `json:"zone" jsonschema:"device zone to create the space in"`
 	DryRun bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`

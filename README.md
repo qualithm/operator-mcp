@@ -115,6 +115,10 @@ Every tool returns the same structured payload:
 | `api`          | other non-2xx          |
 | `error`        | transport / unexpected |
 
+A paused zone also returns `auth` (403) with message `Zone rejects creation in this environment`; treat it
+as "the zone is closed here" and pick an open zone. Production opens `de-fra-a` and `sg-sin-a`; lower
+environments scope to `sg-sin-a`. (Decision qualithm/discussions#894.)
+
 ## Development
 
 ### Prerequisites
