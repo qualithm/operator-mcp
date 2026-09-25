@@ -87,7 +87,7 @@ Register it with an MCP-capable agent, for example:
 | billing (read-only) | `get_billing_summary` · `list_invoices` · `preview_tier_change` |
 
 Money-moving billing routes (tier changes, add-ons, checkout and portal sessions) and account/session
-mutations stay human-only by decision (qualithm/discussions#432). The full route-to-tool mapping,
+mutations stay human-only by decision (qualithm/pm#800). The full route-to-tool mapping,
 including every excluded route's rationale, is `cmd/coverage-check/coverage.json` — CI fails when a new
 platform route ships without a tool or a recorded rationale.
 
@@ -117,7 +117,7 @@ Every tool returns the same structured payload:
 
 A paused zone also returns `auth` (403) with message `Zone rejects creation in this environment`; treat it
 as "the zone is closed here" and pick an open zone. Production opens `de-fra-a` and `sg-sin-a`; lower
-environments scope to `sg-sin-a`. (Decision qualithm/discussions#894.)
+environments scope to `sg-sin-a`. (Decision qualithm/pm#894.)
 
 ## Development
 
