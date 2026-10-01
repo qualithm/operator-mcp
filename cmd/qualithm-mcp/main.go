@@ -19,9 +19,6 @@ import (
 	"github.com/qualithm/operator-mcp/internal/server"
 )
 
-// version is overridden at release time via -ldflags.
-var version = "dev"
-
 func main() {
 	if err := run(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "qualithm-mcp: "+err.Error())
@@ -31,20 +28,26 @@ func main() {
 
 func run() error {
 	var (
-		showHelp bool
-		token    string
-		baseURL  string
+		showHelp    bool
+		showVersion bool
+		token       string
+		baseURL     string
 	)
 	fs := flag.NewFlagSet("qualithm-mcp", flag.ContinueOnError)
 	fs.BoolVar(&showHelp, "help", false, "show usage and exit")
+	fs.BoolVar(&showVersion, "version", false, "print version and exit")
 	fs.StringVar(&token, "token", os.Getenv("QUALITHM_API_TOKEN"), "member API token (or set QUALITHM_API_TOKEN)")
 	fs.StringVar(&baseURL, "url", os.Getenv("QUALITHM_API_URL"), "management API base URL (or set QUALITHM_API_URL)")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return err
 	}
+	if showVersion {
+		_, _ = fmt.Fprintln(os.Stdout, versionString())
+		return nil
+	}
 	if showHelp {
 		fs.SetOutput(os.Stdout)
-		_, _ = fmt.Fprintf(os.Stdout, "qualithm-mcp %s — operator MCP server (stdio)\n\n", version)
+		_, _ = fmt.Fprintf(os.Stdout, "qualithm-mcp %s — operator MCP server (stdio)\n\n", resolvedVersion())
 		fs.Usage()
 		return nil
 	}
@@ -52,7 +55,7 @@ func run() error {
 	// Logs must go to stderr: stdout is the MCP transport.
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
 
-	srv, err := server.New(server.Config{Token: token, BaseURL: baseURL})
+	srv, err := server.New(server.Config{Token: token, BaseURL: baseURL, Version: resolvedVersion()})
 	if err != nil {
 		return err
 	}
@@ -60,6 +63,6 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	slog.Info("qualithm-mcp starting", "version", version, "transport", "stdio")
-	return srv.Run(ctx, version)
+	slog.Info("qualithm-mcp starting", "version", resolvedVersion(), "commit", commit, "transport", "stdio")
+	return srv.Run(ctx, resolvedVersion())
 }
