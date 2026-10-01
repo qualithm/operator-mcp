@@ -25,6 +25,10 @@ type Config struct {
 	Token string
 	// BaseURL overrides the management API base URL. Empty uses the default.
 	BaseURL string
+	// Version is the server's own version, sent as "qualithm-mcp/<Version>"
+	// in the User-Agent so API logs can tell MCP traffic from other clients.
+	// Empty sends operator-go's default User-Agent.
+	Version string
 }
 
 // toolMeta records one registered tool so the conformance test can walk the
@@ -67,6 +71,9 @@ func addTool[In any](s *Server, srv *mcp.Server, t *mcp.Tool, h mcp.ToolHandlerF
 func New(cfg Config) (*Server, error) {
 	newClient := func(dryRun bool) (*operator.Client, error) {
 		opts := []operator.Option{operator.WithDryRun(dryRun)}
+		if cfg.Version != "" {
+			opts = append(opts, operator.WithUserAgent("qualithm-mcp/"+cfg.Version))
+		}
 		if cfg.BaseURL != "" {
 			opts = append(opts, operator.WithBaseURL(cfg.BaseURL))
 		}
