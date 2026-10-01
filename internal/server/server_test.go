@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -69,6 +70,31 @@ func TestNewRequiresToken(t *testing.T) {
 	}
 	if _, err := New(Config{Token: tok, BaseURL: "https://example.test"}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestNewSendsVersionedUserAgent(t *testing.T) {
+	var ua string
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ua = r.Header.Get("User-Agent")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, envelope(`{"current":1,"last":1,"items":[]}`))
+	}))
+	t.Cleanup(api.Close)
+
+	s, err := New(Config{Token: tok, BaseURL: api.URL, Version: "1.2.3"})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	c, err := s.newClient(false)
+	if err != nil {
+		t.Fatalf("newClient: %v", err)
+	}
+	if _, err := c.ListAuthorities(ctx(), 1, 1); err != nil {
+		t.Fatalf("ListAuthorities: %v", err)
+	}
+	if !strings.HasPrefix(ua, "qualithm-mcp/1.2.3") {
+		t.Errorf("User-Agent = %q, want prefix %q", ua, "qualithm-mcp/1.2.3")
 	}
 }
 
