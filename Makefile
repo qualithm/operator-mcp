@@ -7,6 +7,12 @@ PKG         := ./...
 COVER_FILE  := coverage.out
 GOVULNCHECK_VERSION := v1.3.0
 GOSEC_VERSION := v2.26.1
+
+# Version stamped into the binary: an exact tag, else describe/sha, else the
+# VERSION file for source checkouts without git.
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || cat VERSION)
+COMMIT  ?= $(shell git rev-parse --short HEAD 2>/dev/null)
+LDFLAGS := -s -w -X main.version=$(VERSION:v%=%) -X main.commit=$(COMMIT)
 GOSEC_ARGS ?= -exclude-dir=examples ./...
 
 .PHONY: help
@@ -17,7 +23,7 @@ help: ## Show available targets
 .PHONY: build
 build: ## Build the binary into ./bin
 	@mkdir -p bin
-	go build -trimpath -ldflags="-s -w" -o bin/$(BINARY_NAME) ./cmd/$(BINARY_NAME)
+	go build -trimpath -ldflags="$(LDFLAGS)" -o bin/$(BINARY_NAME) ./cmd/$(BINARY_NAME)
 
 .PHONY: run
 run: ## Run the binary
