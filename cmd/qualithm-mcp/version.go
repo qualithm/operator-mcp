@@ -16,6 +16,9 @@ var (
 	commit  = ""
 )
 
+// readBuildInfo is swapped in tests to exercise the fallback.
+var readBuildInfo = debug.ReadBuildInfo
+
 // resolvedVersion returns the stamped version, falling back to the module
 // version Go records in the binary. That covers `go install
 // github.com/qualithm/<repo>/cmd/<binary>@v1.2.3`, which never sees ldflags.
@@ -23,7 +26,7 @@ func resolvedVersion() string {
 	if version != "dev" {
 		return version
 	}
-	if info, ok := debug.ReadBuildInfo(); ok {
+	if info, ok := readBuildInfo(); ok {
 		if v := info.Main.Version; v != "" && v != "(devel)" {
 			return strings.TrimPrefix(v, "v")
 		}

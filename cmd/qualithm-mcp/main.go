@@ -11,6 +11,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -20,13 +21,15 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
+	if err := run(os.Args[1:], os.Stdout); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "qualithm-mcp: "+err.Error())
 		os.Exit(1)
 	}
 }
 
-func run() error {
+// run parses args and serves MCP over stdio. stdout receives --version and
+// --help output; once serving, os.Stdout is the MCP transport.
+func run(args []string, stdout io.Writer) error {
 	var (
 		showHelp    bool
 		showVersion bool
@@ -38,16 +41,16 @@ func run() error {
 	fs.BoolVar(&showVersion, "version", false, "print version and exit")
 	fs.StringVar(&token, "token", os.Getenv("QUALITHM_API_TOKEN"), "member API token (or set QUALITHM_API_TOKEN)")
 	fs.StringVar(&baseURL, "url", os.Getenv("QUALITHM_API_URL"), "management API base URL (or set QUALITHM_API_URL)")
-	if err := fs.Parse(os.Args[1:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if showVersion {
-		_, _ = fmt.Fprintln(os.Stdout, versionString())
+		_, _ = fmt.Fprintln(stdout, versionString())
 		return nil
 	}
 	if showHelp {
-		fs.SetOutput(os.Stdout)
-		_, _ = fmt.Fprintf(os.Stdout, "qualithm-mcp %s — operator MCP server (stdio)\n\n", resolvedVersion())
+		fs.SetOutput(stdout)
+		_, _ = fmt.Fprintf(stdout, "qualithm-mcp %s — operator MCP server (stdio)\n\n", resolvedVersion())
 		fs.Usage()
 		return nil
 	}
