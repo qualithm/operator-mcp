@@ -552,6 +552,11 @@
     },
     {
       "method": "GET",
+      "path": "/zones",
+      "issue": 896
+    },
+    {
+      "method": "GET",
       "path": "/zones/:zone/spaces",
       "tool": "list_zone_spaces"
     }
