@@ -110,7 +110,7 @@ func TestCodeForStatus(t *testing.T) {
 	cases := map[int]string{
 		401: codeAuth, 403: codeAuth,
 		404: codeNotFound, 409: codeConflict, 429: codeRateLimited,
-		500: codeAPI, 418: codeAPI,
+		500: codeAPI, 418: codeAPI, 503: codeUnavailable,
 	}
 	for status, want := range cases {
 		if got := codeForStatus(status); got != want {
@@ -325,6 +325,33 @@ func TestErrorClassification(t *testing.T) {
 		if res == nil || !res.IsError {
 			t.Fatalf("status %d: want IsError result", status)
 		}
+	}
+}
+
+func TestUnavailableCarriesRetryAfter(t *testing.T) {
+	s := newServerWith(func(dryRun bool) (*operator.Client, error) {
+		rt := roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 503,
+				Body: io.NopCloser(strings.NewReader(
+					`{"message":"service temporarily unavailable","code":"backend_unavailable"}`)),
+				Header: http.Header{
+					"Content-Type": []string{"application/json"},
+					"Retry-After":  []string{"5"},
+				},
+			}, nil
+		})
+		return operator.New(tok,
+			operator.WithDryRun(dryRun),
+			operator.WithHTTPClient(&http.Client{Transport: rt}),
+		)
+	})
+	_, out, err := s.getDevice(ctx(), nil, GetDeviceInput{DeviceID: "dev_1"})
+	if err != nil {
+		t.Fatalf("unexpected go error %v", err)
+	}
+	if out.OK || out.Code != codeUnavailable || out.RetryAfterSeconds != 5 {
+		t.Fatalf("want unavailable with retryAfterSeconds 5, got %+v", out)
 	}
 }
 
