@@ -1,10 +1,9 @@
 // Package server implements the Qualithm operator MCP server: the platform
-// provisioning surface (authorities, enrollments, credentials, devices, API
-// tokens) exposed as agent-native MCP tools.
+// management API exposed as agent-native MCP tools.
 //
 // Every tool is a thin mapping over the shared operator client that also backs
 // the qualithm CLI, so the human and agent surfaces never diverge. Mutating
-// tools accept a dry_run flag and report the planned action without applying
+// tools accept a dryRun flag and report the planned action without applying
 // it; failures carry a stable code mirroring the CLI's exit-code contract.
 package server
 
