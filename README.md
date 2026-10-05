@@ -5,21 +5,20 @@
 
 Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
 management API — teams, members, spaces, devices, credentials, enrollments, authorities, API tokens,
-automations, dashboards, observability, and read-only workspace and billing state — as MCP tools over
-stdio, backed by the same `operator` client that powers the `qualithm` CLI, so the human and agent
-surfaces never diverge.
+automations, dashboards, observability, and read-only workspace and billing state — as MCP tools
+over stdio, backed by the same `operator` client that powers the `qualithm` CLI, so the human and
+agent surfaces never diverge.
 
 ## Features
 
-- **Provisioning tools** — one MCP tool per verb over every resource: authorities, enrollments,
-  credentials, devices, and API tokens.
+- **Provisioning tools** — one MCP tool per verb over every resource listed under [Tools](#tools).
 - **Uniform result envelope** — every tool returns the same
-  `{ ok, code, message, dryRun, action, data }` shape, so agents branch on one structure regardless
-  of tool.
+  `{ ok, code, message, retryAfterSeconds, dryRun, action, data }` shape, so agents branch on one
+  structure regardless of tool.
 - **Per-call dry-run** — mutating tools accept `dryRun`; when set, the change is planned and the
   intended request is reported without being sent.
 - **Stable error codes** — failures carry a code mirroring the CLI's exit-code contract (`auth`,
-  `not_found`, `conflict`, `rate_limited`, `api`, `error`).
+  `not_found`, `conflict`, `rate_limited`, `unavailable`, `api`, `error`).
 - **Bearer auth** — authenticates with a member API token (prefix `qmt_`).
 
 ## Installation
@@ -61,11 +60,12 @@ Register it with an MCP-capable agent, for example:
 }
 ```
 
-| Flag      | Env                  | Description                |
-| --------- | -------------------- | -------------------------- |
-| `--url`   | `QUALITHM_API_URL`   | management API base URL    |
-| `--token` | `QUALITHM_API_TOKEN` | member API token (`qmt_…`) |
-| `--help`  | —                    | print usage and exit       |
+| Flag        | Env                  | Description                |
+| ----------- | -------------------- | -------------------------- |
+| `--url`     | `QUALITHM_API_URL`   | management API base URL    |
+| `--token`   | `QUALITHM_API_TOKEN` | member API token (`qmt_…`) |
+| `--version` | —                    | print version and exit     |
+| `--help`    | —                    | print usage and exit       |
 
 ## Tools
 
@@ -86,10 +86,10 @@ Register it with an MCP-capable agent, for example:
 | api tokens          | `list_api_tokens` · `create_api_token` · `revoke_api_token`                                                                                                                                                                                                                                                                    |
 | billing (read-only) | `get_billing_summary` · `list_invoices` · `preview_tier_change`                                                                                                                                                                                                                                                                |
 
-Money-moving billing routes (tier changes, add-ons, checkout and portal sessions) and account/session
-mutations stay human-only by decision (qualithm/pm#800). The full route-to-tool mapping,
-including every excluded route's rationale, is `cmd/coverage-check/coverage.json` — CI fails when a new
-platform route ships without a tool or a recorded rationale.
+Money-moving billing routes (tier changes, add-ons, checkout and portal sessions) and
+account/session mutations stay human-only by decision (qualithm/pm#800). The full route-to-tool
+mapping, including every excluded route's rationale, is `cmd/coverage-check/coverage.json` — CI
+fails when a new platform route ships without a tool or a recorded rationale.
 
 ### Result envelope
 
@@ -120,9 +120,9 @@ Every tool returns the same structured payload:
 `unavailable` means a backend was briefly unavailable: retry the same call after
 `retryAfterSeconds`.
 
-A paused zone also returns `auth` (403) with message `Zone rejects creation in this environment`; treat it
-as "the zone is closed here" and pick an open zone. Production opens `de-fra-a` and `sg-sin-a`; lower
-environments scope to `sg-sin-a`. (Decision qualithm/pm#894.)
+A paused zone also returns `auth` (403) with message `Zone rejects creation in this environment`;
+treat it as "the zone is closed here" and pick an open zone. Production opens `de-fra-a` and
+`sg-sin-a`; lower environments scope to `sg-sin-a`. (Decision qualithm/pm#894.)
 
 ## Development
 
@@ -136,10 +136,8 @@ environments scope to `sg-sin-a`. (Decision qualithm/pm#894.)
 make install-tools
 ```
 
-This installs local development tooling, including `golangci-lint`, `goimports`, and `govulncheck`.
-
-> **Note:** Tools are installed to `$GOPATH/bin` (typically `~/go/bin`). Make sure that directory is
-> on your `$PATH`, otherwise the installed binaries won't be found.
+This installs `golangci-lint`, `goimports`, `govulncheck` and `gosec` into `$GOPATH/bin` (`~/go/bin`
+by default). Put that directory on your `PATH`.
 
 ### Building
 
@@ -158,9 +156,9 @@ make test-coverage     # with coverage report
 
 `cmd/agent-eval` is the end-to-end agent-native eval: it drives the documented agent path against a
 live environment — create an enrollment via the MCP tools, claim the device, connect to the gateway,
-publish telemetry, and read it back — and records every step where the agent had to supply information
-the surfaces did not provide (the friction log). The `Agent Eval` workflow runs it weekly against
-sandbox and files a deduped issue on failure.
+publish telemetry, and read it back — and records every step where the agent had to supply
+information the surfaces did not provide (the friction log). The `Agent Eval` workflow runs it
+weekly against sandbox and files a deduped issue on failure.
 
 ```bash
 go build -o /tmp/qualithm-mcp ./cmd/qualithm-mcp
@@ -183,7 +181,7 @@ make gosec   # standalone gosec scan
 make lint    # golangci-lint (includes gosec checks via .golangci.yaml)
 ```
 
-Daily CI security audit runs both tools in `.github/workflows/audit.yaml`.
+`.github/workflows/audit.yaml` runs `govulncheck` and `gosec` daily.
 
 ## Minimum Supported Go Version
 
