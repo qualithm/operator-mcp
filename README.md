@@ -69,22 +69,22 @@ Register it with an MCP-capable agent, for example:
 
 ## Tools
 
-| Resource | Tools |
-| --- | --- |
-| authorities | `list_authorities` · `create_authority` · `revoke_authority` |
-| enrollments | `list_enrollments` · `create_enrollment` · `revoke_enrollment` |
-| credentials | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential` |
-| devices | `list_devices` · `list_space_devices` · `get_device` · `create_device` · `update_device` · `delete_device` |
-| device commands | `list_device_commands` · `send_device_command` · `get_device_capabilities` · `park_device` · `unpark_device` |
-| spaces | `list_spaces` · `get_space` · `create_space` · `update_space` · `delete_space` |
-| teams | `list_teams` · `create_team` · `get_team` · `update_team` · `delete_team` · `get_team_device_state` |
-| members & invites | `list_team_members` · `add_team_member` · `get_team_member` · `update_team_member` · `remove_team_member` · `list_team_invites` · `create_team_invite` · `revoke_team_invite` |
-| automations | `list_automations` · `create_automation` · `get_automation` · `update_automation` · `delete_automation` · `enable_automation` · `disable_automation` · `run_automation` · `list_automation_runs` · `create_automation_from_template` · `list_automation_templates` · `trigger_automation` · `create_automation_trigger_secret` |
-| dashboards | `list_dashboards` · `create_dashboard` · `get_dashboard` · `update_dashboard` · `delete_dashboard` |
-| observability | `get_telemetry` · `stream_events` · `get_usage` · `get_audit_log` |
-| workspace & account | `get_workspace` · `get_account` · `list_capabilities` · `list_roles` · `list_sessions` · `get_session` · `get_communication_preferences` · `list_zone_spaces` |
-| api tokens | `list_api_tokens` · `create_api_token` · `revoke_api_token` |
-| billing (read-only) | `get_billing_summary` · `list_invoices` · `preview_tier_change` |
+| Resource            | Tools                                                                                                                                                                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| authorities         | `list_authorities` · `create_authority` · `revoke_authority`                                                                                                                                                                                                                                                                   |
+| enrollments         | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                                                                                                                                                                                                                                                 |
+| credentials         | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential`                                                                                                                                                                                                                              |
+| devices             | `list_devices` · `list_space_devices` · `get_device` · `create_device` · `update_device` · `delete_device`                                                                                                                                                                                                                     |
+| device commands     | `list_device_commands` · `send_device_command` · `get_device_capabilities` · `park_device` · `unpark_device`                                                                                                                                                                                                                   |
+| spaces              | `list_spaces` · `get_space` · `create_space` · `update_space` · `delete_space`                                                                                                                                                                                                                                                 |
+| teams               | `list_teams` · `create_team` · `get_team` · `update_team` · `delete_team` · `get_team_device_state`                                                                                                                                                                                                                            |
+| members & invites   | `list_team_members` · `add_team_member` · `get_team_member` · `update_team_member` · `remove_team_member` · `list_team_invites` · `create_team_invite` · `revoke_team_invite`                                                                                                                                                  |
+| automations         | `list_automations` · `create_automation` · `get_automation` · `update_automation` · `delete_automation` · `enable_automation` · `disable_automation` · `run_automation` · `list_automation_runs` · `create_automation_from_template` · `list_automation_templates` · `trigger_automation` · `create_automation_trigger_secret` |
+| dashboards          | `list_dashboards` · `create_dashboard` · `get_dashboard` · `update_dashboard` · `delete_dashboard`                                                                                                                                                                                                                             |
+| observability       | `get_telemetry` · `stream_events` · `get_usage` · `get_audit_log`                                                                                                                                                                                                                                                              |
+| workspace & account | `get_workspace` · `get_account` · `list_capabilities` · `list_roles` · `list_sessions` · `get_session` · `get_communication_preferences` · `list_zone_spaces`                                                                                                                                                                  |
+| api tokens          | `list_api_tokens` · `create_api_token` · `revoke_api_token`                                                                                                                                                                                                                                                                    |
+| billing (read-only) | `get_billing_summary` · `list_invoices` · `preview_tier_change`                                                                                                                                                                                                                                                                |
 
 Money-moving billing routes (tier changes, add-ons, checkout and portal sessions) and account/session
 mutations stay human-only by decision (qualithm/pm#800). The full route-to-tool mapping,
@@ -95,14 +95,15 @@ platform route ships without a tool or a recorded rationale.
 
 Every tool returns the same structured payload:
 
-| Field     | Meaning                                                    |
-| --------- | ---------------------------------------------------------- |
-| `ok`      | whether the call succeeded (a dry-run counts as success)   |
-| `code`    | failure classification when `ok` is false                  |
-| `message` | human-readable error message when `ok` is false            |
-| `dryRun`  | true when a mutation was planned but not applied           |
-| `action`  | the planned request (`method`, `path`) for dry-run results |
-| `data`    | the resource payload returned by the API on success        |
+| Field               | Meaning                                                    |
+| ------------------- | ---------------------------------------------------------- |
+| `ok`                | whether the call succeeded (a dry-run counts as success)   |
+| `code`              | failure classification when `ok` is false                  |
+| `message`           | human-readable error message when `ok` is false            |
+| `retryAfterSeconds` | seconds to wait before retrying an `unavailable` failure   |
+| `dryRun`            | true when a mutation was planned but not applied           |
+| `action`            | the planned request (`method`, `path`) for dry-run results |
+| `data`              | the resource payload returned by the API on success        |
 
 ### Error codes
 
@@ -112,8 +113,12 @@ Every tool returns the same structured payload:
 | `not_found`    | 404                    |
 | `conflict`     | 409                    |
 | `rate_limited` | 429                    |
+| `unavailable`  | 503                    |
 | `api`          | other non-2xx          |
 | `error`        | transport / unexpected |
+
+`unavailable` means a backend was briefly unavailable: retry the same call after
+`retryAfterSeconds`.
 
 A paused zone also returns `auth` (403) with message `Zone rejects creation in this environment`; treat it
 as "the zone is closed here" and pick an open zone. Production opens `de-fra-a` and `sg-sin-a`; lower

@@ -143,11 +143,14 @@ type ActionOut struct {
 type Result struct {
 	// OK reports whether the call succeeded (a dry-run counts as success).
 	OK bool `json:"ok"`
-	// Code classifies a failure: auth, not_found, conflict, rate_limited, api,
-	// or error. Empty on success.
+	// Code classifies a failure: auth, not_found, conflict, rate_limited,
+	// unavailable, api, or error. Empty on success.
 	Code string `json:"code,omitempty"`
 	// Message is a human-readable error message. Empty on success.
 	Message string `json:"message,omitempty"`
+	// RetryAfterSeconds is how long to wait before retrying an `unavailable`
+	// failure, when the API said. Zero otherwise.
+	RetryAfterSeconds int `json:"retryAfterSeconds,omitempty"`
 	// DryRun is true when a mutation was planned but not applied.
 	DryRun bool `json:"dryRun,omitempty"`
 	// Action is the planned mutation, set only for dry-run results.
@@ -163,6 +166,7 @@ const (
 	codeNotFound    = "not_found"    // 404
 	codeConflict    = "conflict"     // 409
 	codeRateLimited = "rate_limited" // 429
+	codeUnavailable = "unavailable"  // 503: a backend is briefly unavailable; retry after a pause
 	codeAPI         = "api"          // other non-2xx response
 )
 
@@ -176,6 +180,8 @@ func codeForStatus(status int) string {
 		return codeConflict
 	case 429:
 		return codeRateLimited
+	case 503:
+		return codeUnavailable
 	default:
 		return codeAPI
 	}
@@ -207,6 +213,10 @@ func fail(err error) (*mcp.CallToolResult, Result, error) {
 		return nil, r, nil
 	}
 	r := Result{OK: false, Code: classify(err), Message: err.Error()}
+	var ce *operator.ClientError
+	if errors.As(err, &ce) {
+		r.RetryAfterSeconds = int(ce.RetryAfter.Seconds())
+	}
 	res := &mcp.CallToolResult{
 		IsError: true,
 		Content: []mcp.Content{&mcp.TextContent{Text: fmt.Sprintf("%s: %s", r.Code, err.Error())}},
