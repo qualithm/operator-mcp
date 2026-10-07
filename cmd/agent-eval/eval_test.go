@@ -152,13 +152,83 @@ func TestRunCreatesSpaceWhenNone(t *testing.T) {
 	if !report.OK {
 		t.Fatalf("report = %+v", report)
 	}
-	// Both the zone and the broker host had to come from configuration.
+	// A configured zone skips list_zones.
+	for _, step := range report.Steps {
+		if step.Name == "list_zones" {
+			t.Fatalf("steps = %+v", report.Steps)
+		}
+	}
+}
+
+func TestRunCreatesSpaceInAnOpenZone(t *testing.T) {
+	var publishedValue float64
+	tools := &fakeTools{responses: map[string]toolFunc{
+		"list_spaces": respond(map[string]any{"items": []any{}}),
+		"list_zones": respond(map[string]any{"zones": []any{
+			map[string]any{"id": "de-fra-a", "open": false},
+			map[string]any{"id": "sg-sin-a", "open": true},
+		}}),
+		"create_space": func(args map[string]any) (any, error) {
+			if args["zone"] != "sg-sin-a" {
+				return nil, fmt.Errorf("wrong zone %v", args["zone"])
+			}
+			return map[string]any{"id": "spc_new"}, nil
+		},
+		"create_enrollment": func(args map[string]any) (any, error) {
+			if args["spaceId"] != "spc_new" {
+				return nil, fmt.Errorf("wrong space %v", args["spaceId"])
+			}
+			return map[string]any{"enrollment": map[string]any{"id": "enr_1"}, "code": "qmc_code"}, nil
+		},
+		"get_telemetry": func(map[string]any) (any, error) {
+			return []map[string]any{{"ts": 1, "value": publishedValue}}, nil
+		},
+		"delete_device": deleteOK,
+	}}
+	report := Run(context.Background(), tools,
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		&recordingPublisher{sink: &publishedValue},
+		Config{},
+	)
+	if !report.OK {
+		t.Fatalf("report = %+v", report)
+	}
+	if report.Steps[1].Name != "list_zones" || report.Steps[2].Name != "create_space" {
+		t.Fatalf("steps = %+v", report.Steps)
+	}
+	// Only the broker host still comes from configuration.
 	steps := make([]string, 0, len(report.Friction))
 	for _, f := range report.Friction {
 		steps = append(steps, f.Step)
 	}
-	if fmt.Sprint(steps) != "[create_space connect]" {
+	if fmt.Sprint(steps) != "[connect]" {
 		t.Fatalf("friction steps = %v", steps)
+	}
+}
+
+func TestRunStopsWithoutAnOpenZone(t *testing.T) {
+	cases := map[string]toolFunc{
+		"no open zone": respond(map[string]any{"zones": []any{map[string]any{"id": "de-fra-a", "open": false}}}),
+		"tool error":   failWith(errors.New("list_zones: api: boom")),
+	}
+	for name, listZones := range cases {
+		t.Run(name, func(t *testing.T) {
+			tools := &fakeTools{responses: map[string]toolFunc{
+				"list_spaces": respond(map[string]any{"items": []any{}}),
+				"list_zones":  listZones,
+			}}
+			report := Run(context.Background(), tools,
+				fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+				fakePublisher{},
+				Config{},
+			)
+			if report.OK {
+				t.Fatal("want failure")
+			}
+			if got := report.Steps[len(report.Steps)-1]; got.Name != "list_zones" || got.OK {
+				t.Fatalf("last step = %+v", got)
+			}
+		})
 	}
 }
 
