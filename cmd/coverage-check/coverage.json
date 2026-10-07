@@ -553,7 +553,7 @@
     {
       "method": "GET",
       "path": "/zones",
-      "issue": 896
+      "tool": "list_zones"
     },
     {
       "method": "GET",
