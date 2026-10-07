@@ -68,6 +68,14 @@ func TestWorkspaceTools(t *testing.T) {
 		t.Fatalf("path %q", rec.path)
 	}
 
+	s = testServer(t, 200, envelope(`{"api":"api.example","zones":[{"id":"sg-sin-a","name":"Singapore","open":true}]}`), rec)
+	if _, out, err := s.listZones(ctx(), nil, ListZonesInput{}); err != nil || !out.OK {
+		t.Fatalf("listZones: %v %+v", err, out)
+	}
+	if rec.path != "/zones" {
+		t.Fatalf("path %q", rec.path)
+	}
+
 	s = testServer(t, 200, envelope(`{"current":1,"items":[{"id":"spc_1","zone":"us"}],"last":1}`), rec)
 	if _, out, err := s.listZoneSpaces(ctx(), nil, ListZoneSpacesInput{Zone: "us"}); err != nil || !out.OK {
 		t.Fatalf("listZoneSpaces: %v %+v", err, out)

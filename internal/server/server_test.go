@@ -447,6 +447,9 @@ func allHandlers(s *Server) []handlerCall {
 		{"revoke_api_token", func() (*mcp.CallToolResult, Result, error) {
 			return s.revokeAPIToken(ctx(), nil, RevokeAPITokenInput{TokenID: "tok_1"})
 		}},
+		{"list_zones", func() (*mcp.CallToolResult, Result, error) {
+			return s.listZones(ctx(), nil, ListZonesInput{})
+		}},
 	}
 }
 

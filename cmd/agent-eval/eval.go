@@ -65,6 +65,7 @@ type publisher interface {
 // provide. Each field the harness had to be given is a friction entry.
 type Config struct {
 	// Zone creates the eval space in this device zone when the team has none.
+	// Empty takes the first open zone list_zones reports.
 	Zone string
 	// VerifyTimeout bounds the telemetry read-back poll.
 	VerifyTimeout time.Duration
@@ -156,14 +157,34 @@ func (r *evalRunner) run(ctx context.Context) {
 		return
 	}
 	if needsSpace {
-		// The tool surface never enumerates the zones create_space needs; the
-		// zone comes from eval configuration.
-		r.friction("create_space", "no tool lists the device zones; the eval's zone comes from configuration")
+		zone := r.cfg.Zone
+		if zone == "" {
+			if err := r.step("list_zones", func() (string, error) {
+				var zones struct {
+					Zones []struct {
+						ID   string `json:"id"`
+						Open bool   `json:"open"`
+					} `json:"zones"`
+				}
+				if err := r.tools.callTool(ctx, "list_zones", map[string]any{}, &zones); err != nil {
+					return "", err
+				}
+				for _, z := range zones.Zones {
+					if z.Open {
+						zone = z.ID
+						return fmt.Sprintf("zone %s", zone), nil
+					}
+				}
+				return "", errors.New("no open zone")
+			}); err != nil {
+				return
+			}
+		}
 		if err := r.step("create_space", func() (string, error) {
 			var space struct {
 				ID string `json:"id"`
 			}
-			if err := r.tools.callTool(ctx, "create_space", map[string]any{"zone": r.cfg.Zone}, &space); err != nil {
+			if err := r.tools.callTool(ctx, "create_space", map[string]any{"zone": zone}, &space); err != nil {
 				return "", err
 			}
 			spaceID = space.ID
