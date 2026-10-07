@@ -45,6 +45,9 @@ type GetSessionInput struct {
 // preferences.
 type GetCommunicationPreferencesInput struct{}
 
+// ListZonesInput lists the environment's device zones.
+type ListZonesInput struct{}
+
 // ListZoneSpacesInput lists spaces in a device zone.
 type ListZoneSpacesInput struct {
 	Zone  string `json:"zone" jsonschema:"device zone to list spaces in"`
@@ -81,6 +84,10 @@ func (s *Server) registerWorkspace(srv *mcp.Server) {
 		Name:        "get_communication_preferences",
 		Description: "Read the caller's email/push notification preferences.",
 	}, s.getCommunicationPreferences, false)
+	addTool(s, srv, &mcp.Tool{
+		Name:        "list_zones",
+		Description: "List the environment's device zones, open zones first. Only an open zone accepts create_space.",
+	}, s.listZones, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_zone_spaces",
 		Description: "List spaces in a device zone.",
@@ -175,6 +182,18 @@ func (s *Server) getCommunicationPreferences(ctx context.Context, _ *mcp.CallToo
 		return fail(err)
 	}
 	return ok(prefs)
+}
+
+func (s *Server) listZones(ctx context.Context, _ *mcp.CallToolRequest, _ ListZonesInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(false)
+	if err != nil {
+		return fail(err)
+	}
+	zones, err := c.ListZones(ctx)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(zones)
 }
 
 func (s *Server) listZoneSpaces(ctx context.Context, _ *mcp.CallToolRequest, in ListZoneSpacesInput) (*mcp.CallToolResult, Result, error) {
