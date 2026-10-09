@@ -26,6 +26,11 @@
       "noTool": "human-only"
     },
     {
+      "method": "POST",
+      "path": "/account/restore",
+      "noTool": "auth-flow"
+    },
+    {
       "method": "GET",
       "path": "/api-tokens",
       "tool": "list_api_tokens"
