@@ -13,7 +13,12 @@ name: Agent Eval
 on:
   schedule:
     - cron: "0 7 * * 1" # Mondays at 07:00 UTC
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force-failure:
+        description: Fail the eval without running it, to exercise the failure report
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,7 +49,12 @@ jobs:
         env:
           QUALITHM_API_TOKEN: ${{ secrets.QUALITHM_EVAL_API_TOKEN }}
           AGENT_EVAL_SERVER_BIN: ${{ runner.temp }}/qualithm-mcp
+          FORCE_FAILURE: ${{ inputs.force-failure }}
         run: |
+          if [ "$FORCE_FAILURE" = "true" ]; then
+            echo "Forced failure: the eval did not run." | tee "$RUNNER_TEMP/eval-summary.txt" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           set +e
           "$RUNNER_TEMP/agent-eval" -out "$RUNNER_TEMP/eval-report.json" | tee "$RUNNER_TEMP/eval-summary.txt"
           code=$?
