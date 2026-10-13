@@ -386,6 +386,11 @@
       "noTool": "device-provisioning"
     },
     {
+      "method": "POST",
+      "path": "/provision/credentials/renew",
+      "noTool": "device-provisioning"
+    },
+    {
       "method": "DELETE",
       "path": "/push/subscriptions",
       "noTool": "app-ui"
