@@ -38,7 +38,7 @@
     {
       "method": "POST",
       "path": "/api-tokens",
-      "tool": "create_api_token"
+      "noTool": "human-only"
     },
     {
       "method": "DELETE",
