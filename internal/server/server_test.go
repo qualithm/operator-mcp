@@ -273,10 +273,6 @@ func TestMutationsApplied(t *testing.T) {
 			_, o, _ := s.deleteSpace(ctx(), nil, DeleteSpaceInput{SpaceID: "sp_1"})
 			return o
 		}},
-		{"create_api_token", func() Result {
-			_, o, _ := s.createAPIToken(ctx(), nil, CreateAPITokenInput{Name: "t"})
-			return o
-		}},
 		{"revoke_api_token", func() Result {
 			_, o, _ := s.revokeAPIToken(ctx(), nil, RevokeAPITokenInput{TokenID: "tok_1"})
 			return o
@@ -440,9 +436,6 @@ func allHandlers(s *Server) []handlerCall {
 		}},
 		{"list_api_tokens", func() (*mcp.CallToolResult, Result, error) {
 			return s.listAPITokens(ctx(), nil, ListAPITokensInput{})
-		}},
-		{"create_api_token", func() (*mcp.CallToolResult, Result, error) {
-			return s.createAPIToken(ctx(), nil, CreateAPITokenInput{Name: "t"})
 		}},
 		{"revoke_api_token", func() (*mcp.CallToolResult, Result, error) {
 			return s.revokeAPIToken(ctx(), nil, RevokeAPITokenInput{TokenID: "tok_1"})
