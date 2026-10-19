@@ -371,6 +371,11 @@
       "noTool": "auth-flow"
     },
     {
+      "method": "GET",
+      "path": "/openapi.json",
+      "noTool": "infra"
+    },
+    {
       "method": "POST",
       "path": "/otps",
       "noTool": "auth-flow"
