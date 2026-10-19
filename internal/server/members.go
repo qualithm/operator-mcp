@@ -32,7 +32,7 @@ type GetTeamMemberInput struct {
 type UpdateTeamMemberInput struct {
 	TeamID   string `json:"teamId" jsonschema:"id of the team"`
 	MemberID string `json:"memberId" jsonschema:"id of the member to update"`
-	Role     string `json:"role" jsonschema:"new role: owner, manager, or guest"`
+	Role     string `json:"role" jsonschema:"new role: owner, manager, or viewer"`
 	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
@@ -54,7 +54,7 @@ type ListTeamInvitesInput struct {
 type CreateTeamInviteInput struct {
 	TeamID string `json:"teamId" jsonschema:"id of the team to invite into"`
 	Email  string `json:"email" jsonschema:"email address of the account to invite"`
-	Role   string `json:"role" jsonschema:"role the invite grants: owner, manager, or guest"`
+	Role   string `json:"role" jsonschema:"role the invite grants: owner, manager, or viewer"`
 	DryRun bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 

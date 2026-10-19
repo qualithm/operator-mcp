@@ -33,10 +33,10 @@ func TestMembersTools(t *testing.T) {
 	}
 
 	s = testServer(t, 200, `{"message":"ok"}`, rec)
-	if _, out, _ := s.updateTeamMember(ctx(), nil, UpdateTeamMemberInput{TeamID: "team_1", MemberID: "mem_1", Role: "guest"}); !out.OK {
+	if _, out, _ := s.updateTeamMember(ctx(), nil, UpdateTeamMemberInput{TeamID: "team_1", MemberID: "mem_1", Role: "viewer"}); !out.OK {
 		t.Fatal("updateTeamMember not ok")
 	}
-	if rec.method != http.MethodPatch || !strings.Contains(rec.body, `"role":"guest"`) {
+	if rec.method != http.MethodPatch || !strings.Contains(rec.body, `"role":"viewer"`) {
 		t.Fatalf("request %s body=%q", rec.method, rec.body)
 	}
 
@@ -57,10 +57,10 @@ func TestMembersTools(t *testing.T) {
 	}
 
 	s = testServer(t, 201, envelope(`{"id":"mem_4","status":"invited"}`), rec)
-	if _, out, err := s.createTeamInvite(ctx(), nil, CreateTeamInviteInput{TeamID: "team_1", Email: "a@b.c", Role: "guest"}); err != nil || !out.OK {
+	if _, out, err := s.createTeamInvite(ctx(), nil, CreateTeamInviteInput{TeamID: "team_1", Email: "a@b.c", Role: "viewer"}); err != nil || !out.OK {
 		t.Fatalf("createTeamInvite: %v %+v", err, out)
 	}
-	if !strings.Contains(rec.body, `"email":"a@b.c"`) || !strings.Contains(rec.body, `"role":"guest"`) {
+	if !strings.Contains(rec.body, `"email":"a@b.c"`) || !strings.Contains(rec.body, `"role":"viewer"`) {
 		t.Fatalf("body=%q", rec.body)
 	}
 
