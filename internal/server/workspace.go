@@ -58,7 +58,7 @@ type ListZoneSpacesInput struct {
 func (s *Server) registerWorkspace(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_workspace",
-		Description: "Read the caller's current workspace: team, membership, and role context.",
+		Description: "Read the caller's current workspace: team, membership, role, and the permissions they hold, so you can check before acting.",
 	}, s.getWorkspace, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_account",

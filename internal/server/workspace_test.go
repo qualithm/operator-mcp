@@ -3,16 +3,23 @@ package server
 import (
 	"strings"
 	"testing"
+
+	operator "github.com/qualithm/operator-go"
 )
 
 func TestWorkspaceTools(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`{"accountId":"acc_1","teamId":"team_1","memberRole":"owner"}`), rec)
-	if _, out, err := s.getWorkspace(ctx(), nil, GetWorkspaceInput{}); err != nil || !out.OK {
+	s := testServer(t, 200, envelope(`{"accountId":"acc_1","teamId":"team_1","memberRole":"viewer","permissions":["device.read"]}`), rec)
+	_, out, err := s.getWorkspace(ctx(), nil, GetWorkspaceInput{})
+	if err != nil || !out.OK {
 		t.Fatalf("getWorkspace: %v %+v", err, out)
 	}
 	if rec.path != "/workspace" {
 		t.Fatalf("path %q", rec.path)
+	}
+	// An agent reads what it may do before acting.
+	if ws, ok := out.Data.(operator.Workspace); !ok || !ws.Can("device.read") || ws.Can("device.write") {
+		t.Fatalf("workspace permissions: %+v", out.Data)
 	}
 
 	s = testServer(t, 200, envelope(`{"id":"acc_1","email":"a@b.c"}`), rec)
