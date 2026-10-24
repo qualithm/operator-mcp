@@ -43,11 +43,18 @@ func fieldByJSONTag(typ reflect.Type, name string) int {
 	return -1
 }
 
-// zeroInput builds a zero value of the tool's input type, setting its dryRun
-// flag when asked.
+// zeroInput builds a zero value of the tool's input type, with its ID fields filled and its
+// dryRun flag set when asked.
 func zeroInput(t *testing.T, meta toolMeta, dryRun bool) any {
 	t.Helper()
 	v := reflect.New(meta.input).Elem()
+	// IDs a real caller always passes (a path segment, or required before any request).
+	for i := range meta.input.NumField() {
+		f := meta.input.Field(i)
+		if f.Type.Kind() == reflect.String && strings.HasSuffix(f.Name, "ID") {
+			v.Field(i).SetString("id_1")
+		}
+	}
 	if dryRun {
 		i := fieldByJSONTag(meta.input, "dryRun")
 		if i < 0 {

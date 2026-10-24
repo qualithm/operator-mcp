@@ -8,9 +8,6 @@ import (
 	operator "github.com/qualithm/operator-go"
 )
 
-// GetWorkspaceInput reads the caller's current workspace context.
-type GetWorkspaceInput struct{}
-
 // GetAccountInput reads the caller's account.
 type GetAccountInput struct{}
 
@@ -48,18 +45,7 @@ type GetCommunicationPreferencesInput struct{}
 // ListZonesInput lists the environment's device zones.
 type ListZonesInput struct{}
 
-// ListZoneSpacesInput lists spaces in a device zone.
-type ListZoneSpacesInput struct {
-	Zone  string `json:"zone" jsonschema:"device zone to list spaces in"`
-	Page  int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
-}
-
 func (s *Server) registerWorkspace(srv *mcp.Server) {
-	addTool(s, srv, &mcp.Tool{
-		Name:        "get_workspace",
-		Description: "Read the caller's current workspace: team, membership, role, and the permissions they hold, so you can check before acting.",
-	}, s.getWorkspace, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_account",
 		Description: "Read the caller's account.",
@@ -88,22 +74,6 @@ func (s *Server) registerWorkspace(srv *mcp.Server) {
 		Name:        "list_zones",
 		Description: "List the environment's device zones, open zones first. Only an open zone accepts create_space.",
 	}, s.listZones, false)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "list_zone_spaces",
-		Description: "List spaces in a device zone.",
-	}, s.listZoneSpaces, false)
-}
-
-func (s *Server) getWorkspace(ctx context.Context, _ *mcp.CallToolRequest, _ GetWorkspaceInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(false)
-	if err != nil {
-		return fail(err)
-	}
-	ws, err := c.GetWorkspace(ctx)
-	if err != nil {
-		return fail(err)
-	}
-	return ok(ws)
 }
 
 func (s *Server) getAccount(ctx context.Context, _ *mcp.CallToolRequest, _ GetAccountInput) (*mcp.CallToolResult, Result, error) {
@@ -194,16 +164,4 @@ func (s *Server) listZones(ctx context.Context, _ *mcp.CallToolRequest, _ ListZo
 		return fail(err)
 	}
 	return ok(zones)
-}
-
-func (s *Server) listZoneSpaces(ctx context.Context, _ *mcp.CallToolRequest, in ListZoneSpacesInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(false)
-	if err != nil {
-		return fail(err)
-	}
-	page, err := c.ListZoneSpaces(ctx, in.Zone, in.Page, in.Limit)
-	if err != nil {
-		return fail(err)
-	}
-	return ok(page)
 }

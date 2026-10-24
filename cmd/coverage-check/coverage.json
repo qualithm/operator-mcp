@@ -2,142 +2,142 @@
   "routes": [
     {
       "method": "DELETE",
-      "path": "/account",
+      "path": "/v1/account",
       "noTool": "human-only"
     },
     {
       "method": "GET",
-      "path": "/account",
+      "path": "/v1/account",
       "tool": "get_account"
     },
     {
       "method": "PATCH",
-      "path": "/account",
+      "path": "/v1/account",
       "noTool": "human-only"
     },
     {
       "method": "GET",
-      "path": "/account/communication-preferences",
+      "path": "/v1/account/communication-preferences",
       "tool": "get_communication_preferences"
     },
     {
       "method": "PATCH",
-      "path": "/account/communication-preferences",
+      "path": "/v1/account/communication-preferences",
       "noTool": "human-only"
     },
     {
       "method": "POST",
-      "path": "/account/restore",
+      "path": "/v1/account/restore",
       "noTool": "auth-flow"
     },
     {
       "method": "GET",
-      "path": "/api-tokens",
+      "path": "/v1/teams/:teamId/api-tokens",
       "tool": "list_api_tokens"
     },
     {
       "method": "POST",
-      "path": "/api-tokens",
+      "path": "/v1/teams/:teamId/api-tokens",
       "noTool": "human-only"
     },
     {
       "method": "DELETE",
-      "path": "/api-tokens/:tokenId",
+      "path": "/v1/teams/:teamId/api-tokens/:tokenId",
       "tool": "revoke_api_token"
     },
     {
       "method": "GET",
-      "path": "/audit",
+      "path": "/v1/teams/:teamId/audit-events",
       "tool": "get_audit_log"
     },
     {
       "method": "GET",
-      "path": "/authorities",
+      "path": "/v1/teams/:teamId/authorities",
       "tool": "list_authorities"
     },
     {
       "method": "POST",
-      "path": "/authorities",
+      "path": "/v1/teams/:teamId/authorities",
       "tool": "create_authority"
     },
     {
       "method": "DELETE",
-      "path": "/authorities/:authorityId",
+      "path": "/v1/teams/:teamId/authorities/:authorityId",
       "tool": "revoke_authority"
     },
     {
       "method": "GET",
-      "path": "/automations",
+      "path": "/v1/teams/:teamId/automations",
       "tool": "list_automations"
     },
     {
       "method": "POST",
-      "path": "/automations",
+      "path": "/v1/teams/:teamId/automations",
       "tool": "create_automation"
     },
     {
       "method": "DELETE",
-      "path": "/automations/:automationId",
+      "path": "/v1/teams/:teamId/automations/:automationId",
       "tool": "delete_automation"
     },
     {
       "method": "GET",
-      "path": "/automations/:automationId",
+      "path": "/v1/teams/:teamId/automations/:automationId",
       "tool": "get_automation"
     },
     {
       "method": "PATCH",
-      "path": "/automations/:automationId",
+      "path": "/v1/teams/:teamId/automations/:automationId",
       "tool": "update_automation"
     },
     {
       "method": "POST",
-      "path": "/automations/:automationId/disable",
+      "path": "/v1/teams/:teamId/automations/:automationId/disable",
       "tool": "disable_automation"
     },
     {
       "method": "POST",
-      "path": "/automations/:automationId/enable",
+      "path": "/v1/teams/:teamId/automations/:automationId/enable",
       "tool": "enable_automation"
     },
     {
       "method": "POST",
-      "path": "/automations/:automationId/run",
+      "path": "/v1/teams/:teamId/automations/:automationId/run",
       "tool": "run_automation"
     },
     {
       "method": "GET",
-      "path": "/automations/:automationId/runs",
+      "path": "/v1/teams/:teamId/automations/:automationId/runs",
       "tool": "list_automation_runs"
     },
     {
       "method": "POST",
-      "path": "/automations/:automationId/trigger-secret",
+      "path": "/v1/teams/:teamId/automations/:automationId/trigger-secret",
       "tool": "create_automation_trigger_secret"
     },
     {
       "method": "POST",
-      "path": "/automations/from-template",
+      "path": "/v1/teams/:teamId/automations/from-template",
       "tool": "create_automation_from_template"
     },
     {
       "method": "POST",
-      "path": "/automations/trigger",
+      "path": "/v1/automations/trigger",
       "tool": "trigger_automation"
     },
     {
       "method": "PATCH",
-      "path": "/billing/addons",
+      "path": "/v1/teams/:teamId/billing/addons",
       "noTool": "human-only"
     },
     {
       "method": "POST",
-      "path": "/billing/checkout-session",
+      "path": "/v1/teams/:teamId/billing/checkout-session",
       "noTool": "human-only"
     },
     {
       "method": "POST",
-      "path": "/billing/portal-session",
+      "path": "/v1/teams/:teamId/billing/portal-session",
       "noTool": "human-only"
     },
     {
@@ -147,17 +147,17 @@
     },
     {
       "method": "GET",
-      "path": "/billing/summary",
+      "path": "/v1/teams/:teamId/billing/summary",
       "tool": "get_billing_summary"
     },
     {
       "method": "PATCH",
-      "path": "/billing/tier",
+      "path": "/v1/teams/:teamId/billing/tier",
       "noTool": "human-only"
     },
     {
       "method": "POST",
-      "path": "/billing/tier/preview",
+      "path": "/v1/teams/:teamId/billing/tier/preview",
       "tool": "preview_tier_change"
     },
     {
@@ -177,157 +177,157 @@
     },
     {
       "method": "GET",
-      "path": "/capabilities",
+      "path": "/v1/teams/:teamId/capabilities",
       "tool": "list_capabilities"
     },
     {
       "method": "PATCH",
-      "path": "/capabilities/:capabilityId",
+      "path": "/v1/teams/:teamId/capabilities/:capabilityId",
       "noTool": "human-only"
     },
     {
       "method": "DELETE",
-      "path": "/cookies/consent",
+      "path": "/v1/cookies/consent",
       "noTool": "app-ui"
     },
     {
       "method": "GET",
-      "path": "/cookies/consent",
+      "path": "/v1/cookies/consent",
       "noTool": "app-ui"
     },
     {
       "method": "POST",
-      "path": "/cookies/consent",
+      "path": "/v1/cookies/consent",
       "noTool": "app-ui"
     },
     {
       "method": "GET",
-      "path": "/dashboards",
+      "path": "/v1/teams/:teamId/dashboards",
       "tool": "list_dashboards"
     },
     {
       "method": "POST",
-      "path": "/dashboards",
+      "path": "/v1/teams/:teamId/dashboards",
       "tool": "create_dashboard"
     },
     {
       "method": "DELETE",
-      "path": "/dashboards/:dashboardId",
+      "path": "/v1/teams/:teamId/dashboards/:dashboardId",
       "tool": "delete_dashboard"
     },
     {
       "method": "GET",
-      "path": "/dashboards/:dashboardId",
+      "path": "/v1/teams/:teamId/dashboards/:dashboardId",
       "tool": "get_dashboard"
     },
     {
       "method": "PATCH",
-      "path": "/dashboards/:dashboardId",
+      "path": "/v1/teams/:teamId/dashboards/:dashboardId",
       "tool": "update_dashboard"
     },
     {
       "method": "GET",
-      "path": "/devices",
+      "path": "/v1/teams/:teamId/devices",
       "tool": "list_devices"
     },
     {
       "method": "POST",
-      "path": "/devices",
+      "path": "/v1/teams/:teamId/devices",
       "tool": "create_device"
     },
     {
       "method": "DELETE",
-      "path": "/devices/:deviceId",
+      "path": "/v1/teams/:teamId/devices/:deviceId",
       "tool": "delete_device"
     },
     {
       "method": "GET",
-      "path": "/devices/:deviceId",
+      "path": "/v1/teams/:teamId/devices/:deviceId",
       "tool": "get_device"
     },
     {
       "method": "PATCH",
-      "path": "/devices/:deviceId",
+      "path": "/v1/teams/:teamId/devices/:deviceId",
       "tool": "update_device"
     },
     {
       "method": "GET",
-      "path": "/devices/:deviceId/automation-templates",
+      "path": "/v1/teams/:teamId/devices/:deviceId/automation-templates",
       "tool": "list_automation_templates"
     },
     {
       "method": "GET",
-      "path": "/devices/:deviceId/capabilities",
+      "path": "/v1/teams/:teamId/devices/:deviceId/capabilities",
       "tool": "get_device_capabilities"
     },
     {
       "method": "GET",
-      "path": "/devices/:deviceId/commands",
+      "path": "/v1/teams/:teamId/devices/:deviceId/commands",
       "tool": "list_device_commands"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/commands",
+      "path": "/v1/teams/:teamId/devices/:deviceId/commands",
       "tool": "send_device_command"
     },
     {
       "method": "GET",
-      "path": "/devices/:deviceId/credentials",
+      "path": "/v1/teams/:teamId/devices/:deviceId/credentials",
       "tool": "list_credentials"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/credentials",
+      "path": "/v1/teams/:teamId/devices/:deviceId/credentials",
       "tool": "mint_credential"
     },
     {
       "method": "DELETE",
-      "path": "/devices/:deviceId/credentials/:credentialId",
+      "path": "/v1/teams/:teamId/devices/:deviceId/credentials/:credentialId",
       "tool": "revoke_credential"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/credentials/:credentialId/rotate",
+      "path": "/v1/teams/:teamId/devices/:deviceId/credentials/:credentialId/rotate",
       "tool": "rotate_credential"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/credentials/cert",
+      "path": "/v1/teams/:teamId/devices/:deviceId/credentials/cert",
       "tool": "issue_cert"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/park",
+      "path": "/v1/teams/:teamId/devices/:deviceId/park",
       "tool": "park_device"
     },
     {
       "method": "POST",
-      "path": "/devices/:deviceId/unpark",
+      "path": "/v1/teams/:teamId/devices/:deviceId/unpark",
       "tool": "unpark_device"
     },
     {
       "method": "GET",
-      "path": "/enrollments",
+      "path": "/v1/teams/:teamId/enrollments",
       "tool": "list_enrollments"
     },
     {
       "method": "POST",
-      "path": "/enrollments",
+      "path": "/v1/teams/:teamId/enrollments",
       "tool": "create_enrollment"
     },
     {
       "method": "DELETE",
-      "path": "/enrollments/:enrollmentId",
+      "path": "/v1/teams/:teamId/enrollments/:enrollmentId",
       "tool": "revoke_enrollment"
     },
     {
       "method": "GET",
-      "path": "/events/stream",
+      "path": "/v1/teams/:teamId/events",
       "tool": "stream_events"
     },
     {
       "method": "POST",
-      "path": "/feedback",
+      "path": "/v1/feedback",
       "noTool": "app-ui"
     },
     {
@@ -342,17 +342,17 @@
     },
     {
       "method": "GET",
-      "path": "/invites",
+      "path": "/v1/account/invites",
       "noTool": "auth-flow"
     },
     {
       "method": "DELETE",
-      "path": "/invites/:inviteId",
+      "path": "/v1/account/invites/:inviteId",
       "noTool": "auth-flow"
     },
     {
       "method": "GET",
-      "path": "/invoices",
+      "path": "/v1/teams/:teamId/invoices",
       "tool": "list_invoices"
     },
     {
@@ -377,37 +377,37 @@
     },
     {
       "method": "POST",
-      "path": "/otps",
+      "path": "/v1/account/otps",
       "noTool": "auth-flow"
     },
     {
       "method": "POST",
-      "path": "/provision/claim",
+      "path": "/v1/provision/claim",
       "noTool": "device-provisioning"
     },
     {
       "method": "POST",
-      "path": "/provision/credentials/cert",
+      "path": "/v1/provision/credentials/cert",
       "noTool": "device-provisioning"
     },
     {
       "method": "POST",
-      "path": "/provision/credentials/renew",
+      "path": "/v1/provision/credentials/renew",
       "noTool": "device-provisioning"
     },
     {
       "method": "DELETE",
-      "path": "/push/subscriptions",
+      "path": "/v1/push/subscriptions",
       "noTool": "app-ui"
     },
     {
       "method": "POST",
-      "path": "/push/subscriptions",
+      "path": "/v1/push/subscriptions",
       "noTool": "app-ui"
     },
     {
       "method": "GET",
-      "path": "/push/vapid-key",
+      "path": "/v1/push/vapid-key",
       "noTool": "app-ui"
     },
     {
@@ -417,127 +417,122 @@
     },
     {
       "method": "GET",
-      "path": "/roles",
+      "path": "/v1/account/memberships",
       "tool": "list_roles"
     },
     {
       "method": "GET",
-      "path": "/sessions",
+      "path": "/v1/account/sessions",
       "tool": "list_sessions"
     },
     {
       "method": "DELETE",
-      "path": "/sessions/:sessionId",
+      "path": "/v1/account/sessions/:sessionId",
       "noTool": "human-only"
     },
     {
       "method": "GET",
-      "path": "/sessions/:sessionId",
+      "path": "/v1/account/sessions/:sessionId",
       "tool": "get_session"
     },
     {
       "method": "GET",
-      "path": "/spaces",
+      "path": "/v1/teams/:teamId/spaces",
       "tool": "list_spaces"
     },
     {
       "method": "POST",
-      "path": "/spaces",
+      "path": "/v1/teams/:teamId/spaces",
       "tool": "create_space"
     },
     {
       "method": "DELETE",
-      "path": "/spaces/:spaceId",
+      "path": "/v1/teams/:teamId/spaces/:spaceId",
       "tool": "delete_space"
     },
     {
       "method": "GET",
-      "path": "/spaces/:spaceId",
+      "path": "/v1/teams/:teamId/spaces/:spaceId",
       "tool": "get_space"
     },
     {
       "method": "PATCH",
-      "path": "/spaces/:spaceId",
+      "path": "/v1/teams/:teamId/spaces/:spaceId",
       "tool": "update_space"
     },
     {
       "method": "GET",
-      "path": "/spaces/:spaceId/devices",
-      "tool": "list_space_devices"
-    },
-    {
-      "method": "GET",
-      "path": "/teams",
+      "path": "/v1/teams",
       "tool": "list_teams"
     },
     {
       "method": "POST",
-      "path": "/teams",
+      "path": "/v1/teams",
       "tool": "create_team"
     },
     {
       "method": "DELETE",
-      "path": "/teams/:teamId",
+      "path": "/v1/teams/:teamId",
       "tool": "delete_team"
     },
     {
       "method": "GET",
-      "path": "/teams/:teamId",
+      "path": "/v1/teams/:teamId",
       "tool": "get_team"
     },
     {
       "method": "PATCH",
-      "path": "/teams/:teamId",
+      "path": "/v1/teams/:teamId",
       "tool": "update_team"
     },
     {
       "method": "GET",
-      "path": "/teams/:teamId/device-state",
+      "path": "/v1/teams/:teamId/device-states",
       "tool": "get_team_device_state"
     },
     {
       "method": "GET",
-      "path": "/teams/:teamId/invites",
+      "path": "/v1/teams/:teamId/invites",
       "tool": "list_team_invites"
     },
     {
       "method": "POST",
-      "path": "/teams/:teamId/invites",
+      "path": "/v1/teams/:teamId/invites",
       "tool": "create_team_invite"
     },
     {
       "method": "DELETE",
-      "path": "/teams/:teamId/invites/:inviteId",
+      "path": "/v1/teams/:teamId/invites/:inviteId",
       "tool": "revoke_team_invite"
     },
     {
       "method": "GET",
-      "path": "/teams/:teamId/members",
+      "path": "/v1/teams/:teamId/members",
       "tool": "list_team_members"
     },
     {
       "method": "POST",
-      "path": "/teams/:teamId/members",
+      "path": "/v1/teams/:teamId/members",
       "tool": "add_team_member"
     },
     {
       "method": "DELETE",
-      "path": "/teams/:teamId/members/:memberId",
+      "path": "/v1/teams/:teamId/members/:memberId",
       "tool": "remove_team_member"
     },
     {
       "method": "GET",
-      "path": "/teams/:teamId/members/:memberId",
+      "path": "/v1/teams/:teamId/members/:memberId",
       "tool": "get_team_member"
     },
     {
       "method": "PATCH",
-      "path": "/teams/:teamId/members/:memberId",
+      "path": "/v1/teams/:teamId/members/:memberId",
       "tool": "update_team_member"
     },
     {
       "method": "GET",
-      "path": "/telemetry",
+      "path": "/v1/teams/:teamId/devices/:deviceId/telemetry",
       "tool": "get_telemetry"
     },
     {
@@ -552,28 +547,23 @@
     },
     {
       "method": "GET",
-      "path": "/usage",
+      "path": "/v1/teams/:teamId/usage",
       "tool": "get_usage"
     },
     {
       "method": "GET",
-      "path": "/workspace",
-      "tool": "get_workspace"
+      "path": "/v1/account/workspace",
+      "noTool": "app-ui"
     },
     {
       "method": "PATCH",
-      "path": "/workspace",
+      "path": "/v1/account/workspace",
       "noTool": "human-only"
     },
     {
       "method": "GET",
-      "path": "/zones",
+      "path": "/v1/zones",
       "tool": "list_zones"
-    },
-    {
-      "method": "GET",
-      "path": "/zones/:zone/spaces",
-      "tool": "list_zone_spaces"
     }
   ]
 }

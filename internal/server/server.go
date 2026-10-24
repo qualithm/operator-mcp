@@ -24,6 +24,8 @@ type Config struct {
 	Token string
 	// BaseURL overrides the management API base URL. Empty uses the default.
 	BaseURL string
+	// Team is the team every tool acts on. Empty uses the token's team.
+	Team string
 	// Version is the server's own version, sent as "qualithm-mcp/<Version>"
 	// in the User-Agent so API logs can tell MCP traffic from other clients.
 	// Empty sends operator-go's default User-Agent.
@@ -75,6 +77,9 @@ func New(cfg Config) (*Server, error) {
 		}
 		if cfg.BaseURL != "" {
 			opts = append(opts, operator.WithBaseURL(cfg.BaseURL))
+		}
+		if cfg.Team != "" {
+			opts = append(opts, operator.WithTeam(cfg.Team))
 		}
 		return operator.New(cfg.Token, opts...)
 	}

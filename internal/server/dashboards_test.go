@@ -12,7 +12,7 @@ func TestDashboardsTools(t *testing.T) {
 	if _, out, err := s.listDashboards(ctx(), nil, ListDashboardsInput{}); err != nil || !out.OK {
 		t.Fatalf("listDashboards: %v %+v", err, out)
 	}
-	if rec.path != "/dashboards" {
+	if rec.path != "/v1/teams/team_1/dashboards" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -28,7 +28,7 @@ func TestDashboardsTools(t *testing.T) {
 	if _, out, _ := s.getDashboard(ctx(), nil, GetDashboardInput{DashboardID: "dash_2"}); !out.OK {
 		t.Fatal("getDashboard not ok")
 	}
-	if rec.path != "/dashboards/dash_2" {
+	if rec.path != "/v1/teams/team_1/dashboards/dash_2" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -44,7 +44,7 @@ func TestDashboardsTools(t *testing.T) {
 	if _, out, _ := s.deleteDashboard(ctx(), nil, DeleteDashboardInput{DashboardID: "dash_2"}); !out.OK {
 		t.Fatal("deleteDashboard not ok")
 	}
-	if rec.method != http.MethodDelete || rec.path != "/dashboards/dash_2" {
+	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/dashboards/dash_2" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 }

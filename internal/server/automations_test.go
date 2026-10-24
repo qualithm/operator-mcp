@@ -12,7 +12,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.listAutomations(ctx(), nil, ListAutomationsInput{}); err != nil || !out.OK {
 		t.Fatalf("listAutomations: %v %+v", err, out)
 	}
-	if rec.path != "/automations" {
+	if rec.path != "/v1/teams/team_1/automations" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -34,7 +34,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, _ := s.getAutomation(ctx(), nil, GetAutomationInput{AutomationID: "auto_2"}); !out.OK {
 		t.Fatal("getAutomation not ok")
 	}
-	if rec.path != "/automations/auto_2" {
+	if rec.path != "/v1/teams/team_1/automations/auto_2" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -58,7 +58,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, _ := s.deleteAutomation(ctx(), nil, DeleteAutomationInput{AutomationID: "auto_2"}); !out.OK {
 		t.Fatal("deleteAutomation not ok")
 	}
-	if rec.method != http.MethodDelete || rec.path != "/automations/auto_2" {
+	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/automations/auto_2" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
@@ -70,11 +70,11 @@ func TestAutomationsTools(t *testing.T) {
 		{"enable", func(s *Server) (Result, error) {
 			_, out, err := s.enableAutomation(ctx(), nil, EnableAutomationInput{AutomationID: "auto_2"})
 			return out, err
-		}, "/automations/auto_2/enable"},
+		}, "/v1/teams/team_1/automations/auto_2/enable"},
 		{"disable", func(s *Server) (Result, error) {
 			_, out, err := s.disableAutomation(ctx(), nil, DisableAutomationInput{AutomationID: "auto_2"})
 			return out, err
-		}, "/automations/auto_2/disable"},
+		}, "/v1/teams/team_1/automations/auto_2/disable"},
 	} {
 		s = testServer(t, 200, envelope(`{"id":"auto_2"}`), rec)
 		out, err := tc.call(s)
@@ -90,7 +90,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.runAutomation(ctx(), nil, RunAutomationInput{AutomationID: "auto_2"}); err != nil || !out.OK {
 		t.Fatalf("runAutomation: %v %+v", err, out)
 	}
-	if rec.path != "/automations/auto_2/run" {
+	if rec.path != "/v1/teams/team_1/automations/auto_2/run" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -98,7 +98,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.listAutomationRuns(ctx(), nil, ListAutomationRunsInput{AutomationID: "auto_2"}); err != nil || !out.OK {
 		t.Fatalf("listAutomationRuns: %v %+v", err, out)
 	}
-	if rec.path != "/automations/auto_2/runs" {
+	if rec.path != "/v1/teams/team_1/automations/auto_2/runs" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -106,7 +106,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.createAutomationFromTemplate(ctx(), nil, CreateAutomationFromTemplateInput{Name: "T", Template: "tmpl_1", Params: []byte(`{"device":"dev_1"}`)}); err != nil || !out.OK {
 		t.Fatalf("createAutomationFromTemplate: %v %+v", err, out)
 	}
-	if rec.path != "/automations/from-template" || !strings.Contains(rec.body, `"template":"tmpl_1"`) {
+	if rec.path != "/v1/teams/team_1/automations/from-template" || !strings.Contains(rec.body, `"template":"tmpl_1"`) {
 		t.Fatalf("path %q body=%q", rec.path, rec.body)
 	}
 
@@ -114,7 +114,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.listAutomationTemplates(ctx(), nil, ListAutomationTemplatesInput{DeviceID: "dev_1"}); err != nil || !out.OK {
 		t.Fatalf("listAutomationTemplates: %v %+v", err, out)
 	}
-	if rec.path != "/devices/dev_1/automation-templates" {
+	if rec.path != "/v1/teams/team_1/devices/dev_1/automation-templates" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -122,7 +122,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.triggerAutomation(ctx(), nil, TriggerAutomationInput{Secret: "trig_secret", Context: []byte(`{"k":"v"}`)}); err != nil || !out.OK {
 		t.Fatalf("triggerAutomation: %v %+v", err, out)
 	}
-	if rec.path != "/automations/trigger" || !strings.Contains(rec.body, `"k":"v"`) {
+	if rec.path != "/v1/automations/trigger" || !strings.Contains(rec.body, `"k":"v"`) {
 		t.Fatalf("path %q body=%q", rec.path, rec.body)
 	}
 
@@ -130,7 +130,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.createAutomationTriggerSecret(ctx(), nil, CreateAutomationTriggerSecretInput{AutomationID: "auto_2"}); err != nil || !out.OK {
 		t.Fatalf("createAutomationTriggerSecret: %v %+v", err, out)
 	}
-	if rec.path != "/automations/auto_2/trigger-secret" {
+	if rec.path != "/v1/teams/team_1/automations/auto_2/trigger-secret" {
 		t.Fatalf("path %q", rec.path)
 	}
 }

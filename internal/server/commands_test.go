@@ -12,7 +12,7 @@ func TestCommandsTools(t *testing.T) {
 	if _, out, err := s.listDeviceCommands(ctx(), nil, ListDeviceCommandsInput{DeviceID: "dev_1"}); err != nil || !out.OK {
 		t.Fatalf("listDeviceCommands: %v %+v", err, out)
 	}
-	if rec.path != "/devices/dev_1/commands" {
+	if rec.path != "/v1/teams/team_1/devices/dev_1/commands" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -28,7 +28,7 @@ func TestCommandsTools(t *testing.T) {
 	if _, out, err := s.getDeviceCapabilities(ctx(), nil, GetDeviceCapabilitiesInput{DeviceID: "dev_1"}); err != nil || !out.OK {
 		t.Fatalf("getDeviceCapabilities: %v %+v", err, out)
 	}
-	if rec.path != "/devices/dev_1/capabilities" {
+	if rec.path != "/v1/teams/team_1/devices/dev_1/capabilities" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -36,7 +36,7 @@ func TestCommandsTools(t *testing.T) {
 	if _, out, _ := s.parkDevice(ctx(), nil, ParkDeviceInput{DeviceID: "dev_1"}); !out.OK {
 		t.Fatal("parkDevice not ok")
 	}
-	if rec.method != http.MethodPost || rec.path != "/devices/dev_1/park" {
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/devices/dev_1/park" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
@@ -44,7 +44,7 @@ func TestCommandsTools(t *testing.T) {
 	if _, out, _ := s.unparkDevice(ctx(), nil, UnparkDeviceInput{DeviceID: "dev_1"}); !out.OK {
 		t.Fatal("unparkDevice not ok")
 	}
-	if rec.method != http.MethodPost || rec.path != "/devices/dev_1/unpark" {
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/devices/dev_1/unpark" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 }
