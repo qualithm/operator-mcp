@@ -58,7 +58,7 @@ func (p *httpProvisioner) claim(ctx context.Context, code, name string) (claimRe
 
 // mqttPublisher connects a claimed device to the gateway over MQTT/TLS and
 // publishes one telemetry reading. The wire contract matches the device SDK:
-// the MQTT client id is the device UUID, the secret is the password, and
+// the MQTT client id is the device ID, the secret is the password, and
 // telemetry goes to the device-relative `telemetry` topic as
 // {ts, metrics: {name: value}}.
 type mqttPublisher struct {
