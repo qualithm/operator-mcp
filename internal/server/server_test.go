@@ -53,6 +53,7 @@ func testServer(t *testing.T, status int, body string, rec *record) *Server {
 		return operator.New(tok,
 			operator.WithDryRun(dryRun),
 			operator.WithHTTPClient(&http.Client{Transport: rt}),
+			operator.WithTeam("team_1"),
 		)
 	})
 }
@@ -82,7 +83,7 @@ func TestNewSendsVersionedUserAgent(t *testing.T) {
 	}))
 	t.Cleanup(api.Close)
 
-	s, err := New(Config{Token: tok, BaseURL: api.URL, Version: "1.2.3"})
+	s, err := New(Config{Token: tok, BaseURL: api.URL, Team: "team_1", Version: "1.2.3"})
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
@@ -131,7 +132,7 @@ func TestListAuthorities(t *testing.T) {
 	if !out.OK {
 		t.Fatal("want OK")
 	}
-	if rec.method != http.MethodGet || rec.path != "/authorities" {
+	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/authorities" {
 		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 	}
 	if !strings.Contains(rec.query, "page=2") || !strings.Contains(rec.query, "limit=5") {
@@ -147,7 +148,7 @@ func TestListEnrollmentsDevicesTokens(t *testing.T) {
 	if _, out, _ := s.listDevices(ctx(), nil, ListDevicesInput{}); !out.OK {
 		t.Error("devices not ok")
 	}
-	if _, out, _ := s.listSpaceDevices(ctx(), nil, ListSpaceDevicesInput{SpaceID: "sp_1"}); !out.OK {
+	if _, out, _ := s.listDevices(ctx(), nil, ListDevicesInput{SpaceID: "sp_1"}); !out.OK {
 		t.Error("space devices not ok")
 	}
 	if _, out, _ := s.listAPITokens(ctx(), nil, ListAPITokensInput{}); !out.OK {
@@ -162,7 +163,7 @@ func TestListSpaces(t *testing.T) {
 	if err != nil || !out.OK {
 		t.Fatalf("out=%+v err=%v", out, err)
 	}
-	if rec.method != http.MethodGet || rec.path != "/spaces" {
+	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/spaces" {
 		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 	}
 	if !strings.Contains(rec.query, "page=2") || !strings.Contains(rec.query, "limit=5") {
@@ -177,7 +178,7 @@ func TestGetSpace(t *testing.T) {
 	if err != nil || !out.OK {
 		t.Fatalf("out=%+v err=%v", out, err)
 	}
-	if rec.path != "/spaces/sp_1" {
+	if rec.path != "/v1/teams/team_1/spaces/sp_1" {
 		t.Fatalf("path = %q", rec.path)
 	}
 }
@@ -207,7 +208,7 @@ func TestCreateAuthorityApplied(t *testing.T) {
 	if err != nil || res != nil || !out.OK {
 		t.Fatalf("res=%v out=%+v err=%v", res, out, err)
 	}
-	if rec.method != http.MethodPost || rec.path != "/authorities" {
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/authorities" {
 		t.Fatalf("unexpected %s %s", rec.method, rec.path)
 	}
 	if !strings.Contains(rec.body, `"name":"ca"`) {
@@ -340,6 +341,7 @@ func TestUnavailableCarriesRetryAfter(t *testing.T) {
 		return operator.New(tok,
 			operator.WithDryRun(dryRun),
 			operator.WithHTTPClient(&http.Client{Transport: rt}),
+			operator.WithTeam("team_1"),
 		)
 	})
 	_, out, err := s.getDevice(ctx(), nil, GetDeviceInput{DeviceID: "dev_1"})
@@ -403,9 +405,6 @@ func allHandlers(s *Server) []handlerCall {
 		}},
 		{"list_devices", func() (*mcp.CallToolResult, Result, error) {
 			return s.listDevices(ctx(), nil, ListDevicesInput{})
-		}},
-		{"list_space_devices", func() (*mcp.CallToolResult, Result, error) {
-			return s.listSpaceDevices(ctx(), nil, ListSpaceDevicesInput{SpaceID: "sp_1"})
 		}},
 		{"get_device", func() (*mcp.CallToolResult, Result, error) {
 			return s.getDevice(ctx(), nil, GetDeviceInput{DeviceID: "dev_1"})
@@ -523,7 +522,7 @@ func TestNewProtocolNegotiation(t *testing.T) {
 		if err != nil || call.IsError {
 			t.Fatalf("get_device: err=%v isError=%v", err, call.IsError)
 		}
-		if rec.method != http.MethodGet || rec.path != "/devices/dev_1" {
+		if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/devices/dev_1" {
 			t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 		}
 

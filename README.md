@@ -60,12 +60,13 @@ Register it with an MCP-capable agent, for example:
 }
 ```
 
-| Flag        | Env                  | Description                |
-| ----------- | -------------------- | -------------------------- |
-| `--url`     | `QUALITHM_API_URL`   | management API base URL    |
-| `--token`   | `QUALITHM_API_TOKEN` | member API token (`qmt_…`) |
-| `--version` | —                    | print version and exit     |
-| `--help`    | —                    | print usage and exit       |
+| Flag        | Env                  | Description                              |
+| ----------- | -------------------- | ---------------------------------------- |
+| `--url`     | `QUALITHM_API_URL`   | management API base URL                  |
+| `--token`   | `QUALITHM_API_TOKEN` | member API token (`qmt_…`)               |
+| `--team`    | `QUALITHM_TEAM`      | team to act on (defaults to the token's) |
+| `--version` | —                    | print version and exit                   |
+| `--help`    | —                    | print usage and exit                     |
 
 ## Tools
 
@@ -74,7 +75,7 @@ Register it with an MCP-capable agent, for example:
 | authorities         | `list_authorities` · `create_authority` · `revoke_authority`                                                                                                                                                                                                                                                                   |
 | enrollments         | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                                                                                                                                                                                                                                                 |
 | credentials         | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential`                                                                                                                                                                                                                              |
-| devices             | `list_devices` · `list_space_devices` · `get_device` · `create_device` · `update_device` · `delete_device`                                                                                                                                                                                                                     |
+| devices             | `list_devices` · `get_device` · `create_device` · `update_device` · `delete_device`                                                                                                                                                                                                                                            |
 | device commands     | `list_device_commands` · `send_device_command` · `get_device_capabilities` · `park_device` · `unpark_device`                                                                                                                                                                                                                   |
 | spaces              | `list_spaces` · `get_space` · `create_space` · `update_space` · `delete_space`                                                                                                                                                                                                                                                 |
 | teams               | `list_teams` · `create_team` · `get_team` · `update_team` · `delete_team` · `get_team_device_state`                                                                                                                                                                                                                            |
@@ -82,8 +83,8 @@ Register it with an MCP-capable agent, for example:
 | automations         | `list_automations` · `create_automation` · `get_automation` · `update_automation` · `delete_automation` · `enable_automation` · `disable_automation` · `run_automation` · `list_automation_runs` · `create_automation_from_template` · `list_automation_templates` · `trigger_automation` · `create_automation_trigger_secret` |
 | dashboards          | `list_dashboards` · `create_dashboard` · `get_dashboard` · `update_dashboard` · `delete_dashboard`                                                                                                                                                                                                                             |
 | observability       | `get_telemetry` · `stream_events` · `get_usage` · `get_audit_log`                                                                                                                                                                                                                                                              |
-| workspace & account | `get_workspace` · `get_account` · `list_capabilities` · `list_roles` · `list_sessions` · `get_session` · `get_communication_preferences` · `list_zones` · `list_zone_spaces`                                                                                                                                                                  |
-| api tokens          | `list_api_tokens` · `revoke_api_token`                                                                                                                                                                                                                                                                    |
+| account             | `get_account` · `list_capabilities` · `list_roles` · `list_sessions` · `get_session` · `get_communication_preferences` · `list_zones`                                                                                                                                                                                          |
+| api tokens          | `list_api_tokens` · `revoke_api_token`                                                                                                                                                                                                                                                                                         |
 | billing (read-only) | `get_billing_summary` · `list_invoices` · `preview_tier_change`                                                                                                                                                                                                                                                                |
 
 Money-moving billing routes (tier changes, add-ons, checkout and portal sessions) and
