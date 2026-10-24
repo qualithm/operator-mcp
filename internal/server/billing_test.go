@@ -12,7 +12,7 @@ func TestBillingTools(t *testing.T) {
 	if _, out, err := s.getBillingSummary(ctx(), nil, GetBillingSummaryInput{}); err != nil || !out.OK {
 		t.Fatalf("getBillingSummary: %v %+v", err, out)
 	}
-	if rec.path != "/billing/summary" {
+	if rec.path != "/v1/teams/team_1/billing/summary" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -20,7 +20,7 @@ func TestBillingTools(t *testing.T) {
 	if _, out, err := s.listInvoices(ctx(), nil, ListInvoicesInput{}); err != nil || !out.OK {
 		t.Fatalf("listInvoices: %v %+v", err, out)
 	}
-	if rec.path != "/invoices" {
+	if rec.path != "/v1/teams/team_1/invoices" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -28,7 +28,7 @@ func TestBillingTools(t *testing.T) {
 	if _, out, err := s.previewTierChange(ctx(), nil, PreviewTierChangeInput{Tier: "pro"}); err != nil || !out.OK {
 		t.Fatalf("previewTierChange: %v %+v", err, out)
 	}
-	if rec.method != http.MethodPost || rec.path != "/billing/tier/preview" || !strings.Contains(rec.body, `"tier":"pro"`) {
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/billing/tier/preview" || !strings.Contains(rec.body, `"tier":"pro"`) {
 		t.Fatalf("request %s %s body=%q", rec.method, rec.path, rec.body)
 	}
 }

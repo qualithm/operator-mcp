@@ -8,10 +8,11 @@ import (
 	operator "github.com/qualithm/operator-go"
 )
 
-// ListSpacesInput lists spaces for the token's team.
+// ListSpacesInput lists the team's spaces, optionally in one zone.
 type ListSpacesInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Zone  string `json:"zone,omitempty" jsonschema:"only the spaces in this device zone, e.g. de-fra-a"`
+	Page  int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Limit int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
 // GetSpaceInput fetches a single space.
@@ -46,7 +47,7 @@ type DeleteSpaceInput struct {
 func (s *Server) registerSpaces(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_spaces",
-		Description: "List spaces for the token's team.",
+		Description: "List the team's spaces, optionally only those in one device zone.",
 	}, s.listSpaces, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_space",
@@ -71,7 +72,12 @@ func (s *Server) listSpaces(ctx context.Context, _ *mcp.CallToolRequest, in List
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListSpaces(ctx, in.Page, in.Limit)
+	var page operator.Page[operator.Space]
+	if in.Zone != "" {
+		page, err = c.ListZoneSpaces(ctx, in.Zone, in.Page, in.Limit)
+	} else {
+		page, err = c.ListSpaces(ctx, in.Page, in.Limit)
+	}
 	if err != nil {
 		return fail(err)
 	}

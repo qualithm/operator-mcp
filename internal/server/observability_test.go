@@ -11,10 +11,10 @@ func TestObservabilityTools(t *testing.T) {
 	if _, out, err := s.getTelemetry(ctx(), nil, GetTelemetryInput{DeviceID: "dev_1", Metric: "temp", From: 1, To: 2, Bucket: 60, Agg: "max", FillLOCF: true}); err != nil || !out.OK {
 		t.Fatalf("getTelemetry: %v %+v", err, out)
 	}
-	if rec.path != "/telemetry" {
+	if rec.path != "/v1/teams/team_1/devices/dev_1/telemetry" {
 		t.Fatalf("path %q", rec.path)
 	}
-	for _, want := range []string{"deviceId=dev_1", "metric=temp", "bucket=60", "agg=max", "fill=locf"} {
+	for _, want := range []string{"metric=temp", "bucket=60", "agg=max", "fill=locf"} {
 		if !strings.Contains(rec.query, want) {
 			t.Fatalf("query %q missing %q", rec.query, want)
 		}
@@ -32,7 +32,7 @@ func TestObservabilityTools(t *testing.T) {
 	if _, out, err := s.getUsage(ctx(), nil, GetUsageInput{}); err != nil || !out.OK {
 		t.Fatalf("getUsage: %v %+v", err, out)
 	}
-	if rec.path != "/usage" {
+	if rec.path != "/v1/teams/team_1/usage" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -40,7 +40,7 @@ func TestObservabilityTools(t *testing.T) {
 	if _, out, err := s.getAuditLog(ctx(), nil, GetAuditLogInput{}); err != nil || !out.OK {
 		t.Fatalf("getAuditLog: %v %+v", err, out)
 	}
-	if rec.path != "/audit" {
+	if rec.path != "/v1/teams/team_1/audit-events" {
 		t.Fatalf("path %q", rec.path)
 	}
 }

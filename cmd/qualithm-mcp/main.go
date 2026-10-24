@@ -34,12 +34,14 @@ func run(args []string, stdout io.Writer) error {
 		showVersion bool
 		token       string
 		baseURL     string
+		team        string
 	)
 	fs := flag.NewFlagSet("qualithm-mcp", flag.ContinueOnError)
 	fs.BoolVar(&showHelp, "help", false, "show usage and exit")
 	fs.BoolVar(&showVersion, "version", false, "print version and exit")
 	fs.StringVar(&token, "token", os.Getenv("QUALITHM_API_TOKEN"), "member API token (or set QUALITHM_API_TOKEN)")
 	fs.StringVar(&baseURL, "url", os.Getenv("QUALITHM_API_URL"), "management API base URL (or set QUALITHM_API_URL)")
+	fs.StringVar(&team, "team", os.Getenv("QUALITHM_TEAM"), "team to act on; defaults to the token's team (or set QUALITHM_TEAM)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func run(args []string, stdout io.Writer) error {
 	// Logs must go to stderr: stdout is the MCP transport.
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
 
-	srv, err := server.New(server.Config{Token: token, BaseURL: baseURL, Version: resolvedVersion()})
+	srv, err := server.New(server.Config{Token: token, BaseURL: baseURL, Team: team, Version: resolvedVersion()})
 	if err != nil {
 		return err
 	}
