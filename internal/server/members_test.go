@@ -12,7 +12,7 @@ func TestMembersTools(t *testing.T) {
 	if _, out, err := s.listTeamMembers(ctx(), nil, ListTeamMembersInput{TeamID: "team_1"}); err != nil || !out.OK {
 		t.Fatalf("listTeamMembers: %v %+v", err, out)
 	}
-	if rec.path != "/teams/team_1/members" {
+	if rec.path != "/v1/teams/team_1/members" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -28,7 +28,7 @@ func TestMembersTools(t *testing.T) {
 	if _, out, _ := s.getTeamMember(ctx(), nil, GetTeamMemberInput{TeamID: "team_1", MemberID: "mem_1"}); !out.OK {
 		t.Fatal("getTeamMember not ok")
 	}
-	if rec.path != "/teams/team_1/members/mem_1" {
+	if rec.path != "/v1/teams/team_1/members/mem_1" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -44,7 +44,7 @@ func TestMembersTools(t *testing.T) {
 	if _, out, _ := s.removeTeamMember(ctx(), nil, RemoveTeamMemberInput{TeamID: "team_1", MemberID: "mem_1"}); !out.OK {
 		t.Fatal("removeTeamMember not ok")
 	}
-	if rec.method != http.MethodDelete || rec.path != "/teams/team_1/members/mem_1" {
+	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/members/mem_1" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
@@ -52,7 +52,7 @@ func TestMembersTools(t *testing.T) {
 	if _, out, err := s.listTeamInvites(ctx(), nil, ListTeamInvitesInput{TeamID: "team_1"}); err != nil || !out.OK {
 		t.Fatalf("listTeamInvites: %v %+v", err, out)
 	}
-	if rec.path != "/teams/team_1/invites" {
+	if rec.path != "/v1/teams/team_1/invites" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -68,7 +68,7 @@ func TestMembersTools(t *testing.T) {
 	if _, out, _ := s.revokeTeamInvite(ctx(), nil, RevokeTeamInviteInput{TeamID: "team_1", InviteID: "mem_4"}); !out.OK {
 		t.Fatal("revokeTeamInvite not ok")
 	}
-	if rec.method != http.MethodDelete || rec.path != "/teams/team_1/invites/mem_4" {
+	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/invites/mem_4" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 }

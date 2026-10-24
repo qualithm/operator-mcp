@@ -8,15 +8,9 @@ import (
 	operator "github.com/qualithm/operator-go"
 )
 
-// ListDevicesInput lists devices for the token's team.
+// ListDevicesInput lists the team's devices, optionally in one space.
 type ListDevicesInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
-}
-
-// ListSpaceDevicesInput lists devices scoped to a space.
-type ListSpaceDevicesInput struct {
-	SpaceID string `json:"spaceId" jsonschema:"id of the space to list devices for"`
+	SpaceID string `json:"spaceId,omitempty" jsonschema:"only the devices in this space"`
 	Page    int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
 	Limit   int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
@@ -49,12 +43,8 @@ type DeleteDeviceInput struct {
 func (s *Server) registerDevices(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_devices",
-		Description: "List devices for the token's team.",
+		Description: "List the team's devices, optionally only those in one space.",
 	}, s.listDevices, false)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "list_space_devices",
-		Description: "List devices scoped to a single space.",
-	}, s.listSpaceDevices, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_device",
 		Description: "Fetch a single device by id.",
@@ -78,19 +68,12 @@ func (s *Server) listDevices(ctx context.Context, _ *mcp.CallToolRequest, in Lis
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListDevices(ctx, in.Page, in.Limit)
-	if err != nil {
-		return fail(err)
+	var page operator.Page[operator.Device]
+	if in.SpaceID != "" {
+		page, err = c.ListSpaceDevices(ctx, in.SpaceID, in.Page, in.Limit)
+	} else {
+		page, err = c.ListDevices(ctx, in.Page, in.Limit)
 	}
-	return ok(page)
-}
-
-func (s *Server) listSpaceDevices(ctx context.Context, _ *mcp.CallToolRequest, in ListSpaceDevicesInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(false)
-	if err != nil {
-		return fail(err)
-	}
-	page, err := c.ListSpaceDevices(ctx, in.SpaceID, in.Page, in.Limit)
 	if err != nil {
 		return fail(err)
 	}

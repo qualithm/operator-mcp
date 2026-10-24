@@ -20,9 +20,9 @@ type CreateTeamInput struct {
 	DryRun bool `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
-// GetTeamInput fetches a single team.
+// GetTeamInput fetches a team: by default the one this server acts on.
 type GetTeamInput struct {
-	TeamID string `json:"teamId" jsonschema:"id of the team to fetch"`
+	TeamID string `json:"teamId,omitempty" jsonschema:"id of the team to fetch; empty means the team this server acts on"`
 }
 
 // UpdateTeamInput renames a team.
@@ -54,7 +54,7 @@ func (s *Server) registerTeams(srv *mcp.Server) {
 	}, s.createTeam, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_team",
-		Description: "Fetch a single team by id.",
+		Description: "Fetch a team with your role and the permissions you hold in it, so you can check before acting. Without an id, it's the team this server acts on.",
 	}, s.getTeam, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "update_team",
@@ -99,7 +99,13 @@ func (s *Server) getTeam(ctx context.Context, _ *mcp.CallToolRequest, in GetTeam
 	if err != nil {
 		return fail(err)
 	}
-	t, err := c.GetTeam(ctx, in.TeamID)
+	teamID := in.TeamID
+	if teamID == "" {
+		if teamID, err = c.TeamID(ctx); err != nil {
+			return fail(err)
+		}
+	}
+	t, err := c.GetTeam(ctx, teamID)
 	if err != nil {
 		return fail(err)
 	}
