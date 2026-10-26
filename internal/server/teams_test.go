@@ -50,7 +50,7 @@ func TestTeamsTools(t *testing.T) {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
-	s = testServer(t, 200, envelope(`{"items":[{"deviceId":"dev_1","online":true,"lastSeenAt":1,"metrics":{"temp":21}}]}`), rec)
+	s = testServer(t, 200, envelope(`{"items":[{"deviceId":"dev_1","online":true,"lastSeenAt":"2026-10-01T00:00:00.001Z","metrics":{"temp":21}}]}`), rec)
 	_, out, err := s.getTeamDeviceState(ctx(), nil, GetTeamDeviceStateInput{TeamID: "team_2"})
 	if err != nil || !out.OK {
 		t.Fatalf("getTeamDeviceState: %v %+v", err, out)

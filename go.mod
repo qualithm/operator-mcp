@@ -5,7 +5,7 @@ go 1.26.9
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1
 	github.com/modelcontextprotocol/go-sdk v1.7.0
-	github.com/qualithm/operator-go v0.8.2-0.20261026003150-168586a1e6ac
+	github.com/qualithm/operator-go v0.8.2-0.20261026011446-4a8f3f0f74d6
 )
 
 require (
