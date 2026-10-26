@@ -31,18 +31,6 @@ type GetDeviceCapabilitiesInput struct {
 	DeviceID string `json:"deviceId" jsonschema:"id of the device to list capabilities for"`
 }
 
-// ParkDeviceInput parks a device.
-type ParkDeviceInput struct {
-	DeviceID string `json:"deviceId" jsonschema:"id of the device to park"`
-	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
-}
-
-// UnparkDeviceInput returns a parked device to active.
-type UnparkDeviceInput struct {
-	DeviceID string `json:"deviceId" jsonschema:"id of the device to unpark"`
-	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
-}
-
 func (s *Server) registerCommands(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_device_commands",
@@ -56,14 +44,6 @@ func (s *Server) registerCommands(srv *mcp.Server) {
 		Name:        "get_device_capabilities",
 		Description: "List the capabilities a device declared in its connect-time manifest.",
 	}, s.getDeviceCapabilities, false)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "park_device",
-		Description: "Park a device: it stops counting against the active-device limit while its credentials and history survive. Idempotent.",
-	}, s.parkDevice, true)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "unpark_device",
-		Description: "Return a parked device to active. Idempotent.",
-	}, s.unparkDevice, true)
 }
 
 func (s *Server) listDeviceCommands(ctx context.Context, _ *mcp.CallToolRequest, in ListDeviceCommandsInput) (*mcp.CallToolResult, Result, error) {
@@ -104,26 +84,4 @@ func (s *Server) getDeviceCapabilities(ctx context.Context, _ *mcp.CallToolReque
 		return fail(err)
 	}
 	return ok(caps)
-}
-
-func (s *Server) parkDevice(ctx context.Context, _ *mcp.CallToolRequest, in ParkDeviceInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(in.DryRun)
-	if err != nil {
-		return fail(err)
-	}
-	if err := c.ParkDevice(ctx, in.DeviceID); err != nil {
-		return fail(err)
-	}
-	return ok(nil)
-}
-
-func (s *Server) unparkDevice(ctx context.Context, _ *mcp.CallToolRequest, in UnparkDeviceInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(in.DryRun)
-	if err != nil {
-		return fail(err)
-	}
-	if err := c.UnparkDevice(ctx, in.DeviceID); err != nil {
-		return fail(err)
-	}
-	return ok(nil)
 }
