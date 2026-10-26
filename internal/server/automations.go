@@ -15,13 +15,16 @@ type ListAutomationsInput struct {
 	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
-// CreateAutomationInput creates an automation from a full payload. Omit
-// spaceId for a team-wide automation.
+// CreateAutomationInput creates an automation from a full payload, or from a
+// catalogue template the platform expands. Omit spaceId for a team-wide
+// automation.
 type CreateAutomationInput struct {
-	Name    string          `json:"name" jsonschema:"automation name"`
-	SpaceID string          `json:"spaceId,omitempty" jsonschema:"id of the space to scope the automation to; omit for team-wide"`
-	Payload json.RawMessage `json:"payload" jsonschema:"automation document: trigger plus ordered condition/action chain"`
-	DryRun  bool            `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
+	Name     string          `json:"name" jsonschema:"automation name"`
+	SpaceID  string          `json:"spaceId,omitempty" jsonschema:"id of the space to scope the automation to; omit for team-wide"`
+	Payload  json.RawMessage `json:"payload,omitempty" jsonschema:"automation document: trigger plus ordered condition/action chain; exclusive with template"`
+	Template string          `json:"template,omitempty" jsonschema:"id of the catalogue template to expand; exclusive with payload"`
+	Params   json.RawMessage `json:"params,omitempty" jsonschema:"template slot values, used with template"`
+	DryRun   bool            `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
 // GetAutomationInput fetches a single automation.
@@ -34,6 +37,7 @@ type GetAutomationInput struct {
 type UpdateAutomationInput struct {
 	AutomationID string          `json:"automationId" jsonschema:"id of the automation to update"`
 	Name         string          `json:"name,omitempty" jsonschema:"new automation name"`
+	Enabled      *bool           `json:"enabled,omitempty" jsonschema:"true so its trigger fires, false to pause it without deleting it"`
 	SpaceID      string          `json:"spaceId,omitempty" jsonschema:"new space id to scope the automation to"`
 	Payload      json.RawMessage `json:"payload,omitempty" jsonschema:"new trigger+chain document"`
 	Template     string          `json:"template,omitempty" jsonschema:"template id to re-expand the chain from"`
@@ -44,18 +48,6 @@ type UpdateAutomationInput struct {
 // DeleteAutomationInput deletes an automation.
 type DeleteAutomationInput struct {
 	AutomationID string `json:"automationId" jsonschema:"id of the automation to delete"`
-	DryRun       bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
-}
-
-// EnableAutomationInput enables an automation.
-type EnableAutomationInput struct {
-	AutomationID string `json:"automationId" jsonschema:"id of the automation to enable"`
-	DryRun       bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
-}
-
-// DisableAutomationInput disables an automation.
-type DisableAutomationInput struct {
-	AutomationID string `json:"automationId" jsonschema:"id of the automation to disable"`
 	DryRun       bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
@@ -70,15 +62,6 @@ type ListAutomationRunsInput struct {
 	AutomationID string `json:"automationId" jsonschema:"id of the automation to list runs for"`
 	Page         int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
 	Limit        int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
-}
-
-// CreateAutomationFromTemplateInput creates an automation by expanding a
-// catalogue template server-side.
-type CreateAutomationFromTemplateInput struct {
-	Name     string          `json:"name" jsonschema:"automation name"`
-	Template string          `json:"template" jsonschema:"id of the catalogue template to expand"`
-	Params   json.RawMessage `json:"params,omitempty" jsonschema:"template slot values"`
-	DryRun   bool            `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
 // ListAutomationTemplatesInput lists the template catalogue for a device.
@@ -109,7 +92,7 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 	}, s.listAutomations, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_automation",
-		Description: "Create an automation from a full trigger+chain payload.",
+		Description: "Create an automation from a full trigger+chain payload, or from a catalogue template with slot values.",
 	}, s.createAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_automation",
@@ -117,20 +100,12 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 	}, s.getAutomation, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "update_automation",
-		Description: "Update an automation's name, space, chain, or template params.",
+		Description: "Update an automation's name, space, chain or template params, or enable or disable it.",
 	}, s.updateAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "delete_automation",
 		Description: "Delete an automation by id.",
 	}, s.deleteAutomation, true)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "enable_automation",
-		Description: "Enable an automation so its trigger fires.",
-	}, s.enableAutomation, true)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "disable_automation",
-		Description: "Disable an automation without deleting it.",
-	}, s.disableAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "run_automation",
 		Description: "Queue a manual run of an automation.",
@@ -139,10 +114,6 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 		Name:        "list_automation_runs",
 		Description: "List execution summaries for an automation.",
 	}, s.listAutomationRuns, false)
-	addTool(s, srv, &mcp.Tool{
-		Name:        "create_automation_from_template",
-		Description: "Create an automation by expanding a catalogue template with slot values.",
-	}, s.createAutomationFromTemplate, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_automation_templates",
 		Description: "List the automation template catalogue filtered to what a device declared it can do.",
@@ -173,6 +144,23 @@ func (s *Server) createAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 	c, err := s.newClient(in.DryRun)
 	if err != nil {
 		return fail(err)
+	}
+	if in.Template != "" {
+		var params map[string]any
+		if len(in.Params) > 0 {
+			if err := json.Unmarshal(in.Params, &params); err != nil {
+				return fail(err)
+			}
+		}
+		a, err := c.CreateAutomationFromTemplate(ctx, operator.CreateAutomationFromTemplateInput{
+			Name:     in.Name,
+			Template: in.Template,
+			Params:   params,
+		})
+		if err != nil {
+			return fail(err)
+		}
+		return ok(a)
 	}
 	var spaceID *string
 	if in.SpaceID != "" {
@@ -218,6 +206,7 @@ func (s *Server) updateAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 	}
 	upd := operator.UpdateAutomationInput{
 		Name:     in.Name,
+		Enabled:  in.Enabled,
 		SpaceID:  spaceID,
 		Template: in.Template,
 	}
@@ -252,30 +241,6 @@ func (s *Server) deleteAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 	return ok(nil)
 }
 
-func (s *Server) enableAutomation(ctx context.Context, _ *mcp.CallToolRequest, in EnableAutomationInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(in.DryRun)
-	if err != nil {
-		return fail(err)
-	}
-	a, err := c.EnableAutomation(ctx, in.AutomationID)
-	if err != nil {
-		return fail(err)
-	}
-	return ok(a)
-}
-
-func (s *Server) disableAutomation(ctx context.Context, _ *mcp.CallToolRequest, in DisableAutomationInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(in.DryRun)
-	if err != nil {
-		return fail(err)
-	}
-	a, err := c.DisableAutomation(ctx, in.AutomationID)
-	if err != nil {
-		return fail(err)
-	}
-	return ok(a)
-}
-
 func (s *Server) runAutomation(ctx context.Context, _ *mcp.CallToolRequest, in RunAutomationInput) (*mcp.CallToolResult, Result, error) {
 	c, err := s.newClient(in.DryRun)
 	if err != nil {
@@ -298,28 +263,6 @@ func (s *Server) listAutomationRuns(ctx context.Context, _ *mcp.CallToolRequest,
 		return fail(err)
 	}
 	return ok(page)
-}
-
-func (s *Server) createAutomationFromTemplate(ctx context.Context, _ *mcp.CallToolRequest, in CreateAutomationFromTemplateInput) (*mcp.CallToolResult, Result, error) {
-	c, err := s.newClient(in.DryRun)
-	if err != nil {
-		return fail(err)
-	}
-	var params map[string]any
-	if len(in.Params) > 0 {
-		if err := json.Unmarshal(in.Params, &params); err != nil {
-			return fail(err)
-		}
-	}
-	a, err := c.CreateAutomationFromTemplate(ctx, operator.CreateAutomationFromTemplateInput{
-		Name:     in.Name,
-		Template: in.Template,
-		Params:   params,
-	})
-	if err != nil {
-		return fail(err)
-	}
-	return ok(a)
 }
 
 func (s *Server) listAutomationTemplates(ctx context.Context, _ *mcp.CallToolRequest, in ListAutomationTemplatesInput) (*mcp.CallToolResult, Result, error) {

@@ -62,27 +62,17 @@ func TestAutomationsTools(t *testing.T) {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
-	for _, tc := range []struct {
-		name string
-		call func(*Server) (Result, error)
-		path string
-	}{
-		{"enable", func(s *Server) (Result, error) {
-			_, out, err := s.enableAutomation(ctx(), nil, EnableAutomationInput{AutomationID: "auto_2"})
-			return out, err
-		}, "/v1/teams/team_1/automations/auto_2/enable"},
-		{"disable", func(s *Server) (Result, error) {
-			_, out, err := s.disableAutomation(ctx(), nil, DisableAutomationInput{AutomationID: "auto_2"})
-			return out, err
-		}, "/v1/teams/team_1/automations/auto_2/disable"},
-	} {
+	for _, enabled := range []bool{true, false} {
 		s = testServer(t, 200, envelope(`{"id":"auto_2"}`), rec)
-		out, err := tc.call(s)
-		if err != nil || !out.OK {
-			t.Fatalf("%s: %v %+v", tc.name, err, out)
+		if _, out, err := s.updateAutomation(ctx(), nil, UpdateAutomationInput{AutomationID: "auto_2", Enabled: &enabled}); err != nil || !out.OK {
+			t.Fatalf("enabled=%v: %v %+v", enabled, err, out)
 		}
-		if rec.method != http.MethodPost || rec.path != tc.path {
-			t.Fatalf("%s: request %s %s", tc.name, rec.method, rec.path)
+		want := `"enabled":false`
+		if enabled {
+			want = `"enabled":true`
+		}
+		if rec.method != http.MethodPatch || rec.path != "/v1/teams/team_1/automations/auto_2" || !strings.Contains(rec.body, want) {
+			t.Fatalf("enabled=%v: request %s %s body=%q", enabled, rec.method, rec.path, rec.body)
 		}
 	}
 
@@ -90,7 +80,7 @@ func TestAutomationsTools(t *testing.T) {
 	if _, out, err := s.runAutomation(ctx(), nil, RunAutomationInput{AutomationID: "auto_2"}); err != nil || !out.OK {
 		t.Fatalf("runAutomation: %v %+v", err, out)
 	}
-	if rec.path != "/v1/teams/team_1/automations/auto_2/run" {
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/automations/auto_2/runs" {
 		t.Fatalf("path %q", rec.path)
 	}
 
@@ -103,10 +93,10 @@ func TestAutomationsTools(t *testing.T) {
 	}
 
 	s = testServer(t, 201, envelope(`{"id":"auto_3"}`), rec)
-	if _, out, err := s.createAutomationFromTemplate(ctx(), nil, CreateAutomationFromTemplateInput{Name: "T", Template: "tmpl_1", Params: []byte(`{"device":"dev_1"}`)}); err != nil || !out.OK {
-		t.Fatalf("createAutomationFromTemplate: %v %+v", err, out)
+	if _, out, err := s.createAutomation(ctx(), nil, CreateAutomationInput{Name: "T", Template: "tmpl_1", Params: []byte(`{"device":"dev_1"}`)}); err != nil || !out.OK {
+		t.Fatalf("createAutomation from a template: %v %+v", err, out)
 	}
-	if rec.path != "/v1/teams/team_1/automations/from-template" || !strings.Contains(rec.body, `"template":"tmpl_1"`) {
+	if rec.path != "/v1/teams/team_1/automations" || !strings.Contains(rec.body, `"template":"tmpl_1"`) || strings.Contains(rec.body, `"payload"`) {
 		t.Fatalf("path %q body=%q", rec.path, rec.body)
 	}
 

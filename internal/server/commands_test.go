@@ -32,19 +32,17 @@ func TestCommandsTools(t *testing.T) {
 		t.Fatalf("path %q", rec.path)
 	}
 
-	s = testServer(t, 200, `{"message":"ok"}`, rec)
-	if _, out, _ := s.parkDevice(ctx(), nil, ParkDeviceInput{DeviceID: "dev_1"}); !out.OK {
-		t.Fatal("parkDevice not ok")
-	}
-	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/devices/dev_1/park" {
-		t.Fatalf("request %s %s", rec.method, rec.path)
-	}
-
-	s = testServer(t, 200, `{"message":"ok"}`, rec)
-	if _, out, _ := s.unparkDevice(ctx(), nil, UnparkDeviceInput{DeviceID: "dev_1"}); !out.OK {
-		t.Fatal("unparkDevice not ok")
-	}
-	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/devices/dev_1/unpark" {
-		t.Fatalf("request %s %s", rec.method, rec.path)
+	for _, parked := range []bool{true, false} {
+		s = testServer(t, 204, ``, rec)
+		if _, out, _ := s.updateDevice(ctx(), nil, UpdateDeviceInput{DeviceID: "dev_1", Parked: &parked}); !out.OK {
+			t.Fatalf("parked=%v not ok", parked)
+		}
+		want := `"parked":false`
+		if parked {
+			want = `"parked":true`
+		}
+		if rec.method != http.MethodPatch || rec.path != "/v1/teams/team_1/devices/dev_1" || !strings.Contains(rec.body, want) {
+			t.Fatalf("parked=%v: request %s %s body=%q", parked, rec.method, rec.path, rec.body)
+		}
 	}
 }
