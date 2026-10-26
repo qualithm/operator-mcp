@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/qualithm/operator-mcp/actions/workflows/ci.yaml/badge.svg)](https://github.com/qualithm/operator-mcp/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/qualithm/operator-mcp/graph/badge.svg)](https://codecov.io/gh/qualithm/operator-mcp)
+[![Go Reference](https://pkg.go.dev/badge/github.com/qualithm/operator-mcp.svg)](https://pkg.go.dev/github.com/qualithm/operator-mcp)
 
 Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
 management API — teams, members, spaces, devices, credentials, enrollments, authorities, API tokens,
