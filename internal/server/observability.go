@@ -10,12 +10,12 @@ import (
 )
 
 // GetTelemetryInput reads bucketed telemetry points for a device metric.
-// From and To are epoch milliseconds.
+// From and To are RFC 3339 times.
 type GetTelemetryInput struct {
 	DeviceID string `json:"deviceId" jsonschema:"id of the device to read telemetry for"`
 	Metric   string `json:"metric" jsonschema:"metric name to read"`
-	From     int64  `json:"from" jsonschema:"range start, epoch milliseconds"`
-	To       int64  `json:"to" jsonschema:"range end, epoch milliseconds"`
+	From     string `json:"from" jsonschema:"range start, RFC 3339, inclusive"`
+	To       string `json:"to" jsonschema:"range end, RFC 3339, exclusive"`
 	Bucket   int    `json:"bucket,omitempty" jsonschema:"bucket width in seconds; 0 uses the server default"`
 	Agg      string `json:"agg,omitempty" jsonschema:"bucket aggregate: avg, min, max, sum, count; default avg"`
 	FillLOCF bool   `json:"fillLocf,omitempty" jsonschema:"carry the last observation forward across empty buckets"`
@@ -62,11 +62,20 @@ func (s *Server) getTelemetry(ctx context.Context, _ *mcp.CallToolRequest, in Ge
 	if err != nil {
 		return fail(err)
 	}
+	// An empty bound goes upstream as no bound, so the platform says what it needs.
+	from, err := optionalTime("from", in.From)
+	if err != nil {
+		return fail(err)
+	}
+	to, err := optionalTime("to", in.To)
+	if err != nil {
+		return fail(err)
+	}
 	pts, err := c.GetTelemetry(ctx, operator.GetTelemetryInput{
 		DeviceID: in.DeviceID,
 		Metric:   in.Metric,
-		From:     in.From,
-		To:       in.To,
+		From:     deref(from),
+		To:       deref(to),
 		Bucket:   in.Bucket,
 		Agg:      in.Agg,
 		FillLOCF: in.FillLOCF,
