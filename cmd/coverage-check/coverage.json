@@ -92,17 +92,7 @@
     },
     {
       "method": "POST",
-      "path": "/v1/teams/:teamId/automations/:automationId/disable",
-      "tool": "disable_automation"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/automations/:automationId/enable",
-      "tool": "enable_automation"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/automations/:automationId/run",
+      "path": "/v1/teams/:teamId/automations/:automationId/runs",
       "tool": "run_automation"
     },
     {
@@ -114,11 +104,6 @@
       "method": "POST",
       "path": "/v1/teams/:teamId/automations/:automationId/trigger-secret",
       "tool": "create_automation_trigger_secret"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/automations/from-template",
-      "tool": "create_automation_from_template"
     },
     {
       "method": "POST",
@@ -294,16 +279,6 @@
       "method": "POST",
       "path": "/v1/teams/:teamId/devices/:deviceId/credentials/cert",
       "tool": "issue_cert"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/devices/:deviceId/park",
-      "tool": "park_device"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/devices/:deviceId/unpark",
-      "tool": "unpark_device"
     },
     {
       "method": "GET",

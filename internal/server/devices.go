@@ -31,6 +31,7 @@ type UpdateDeviceInput struct {
 	DeviceID string `json:"deviceId" jsonschema:"id of the device to update"`
 	Name     string `json:"name,omitempty" jsonschema:"new device name"`
 	SpaceID  string `json:"spaceId,omitempty" jsonschema:"new space id to move the device into"`
+	Parked   *bool  `json:"parked,omitempty" jsonschema:"true to park the device: it stops connecting and counting against the active-device limit, while its credentials and history survive; false to return it to active"`
 	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
@@ -55,7 +56,7 @@ func (s *Server) registerDevices(srv *mcp.Server) {
 	}, s.createDevice, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "update_device",
-		Description: "Update a device's name or space.",
+		Description: "Update a device's name or space, or park or unpark it.",
 	}, s.updateDevice, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "delete_device",
@@ -112,6 +113,7 @@ func (s *Server) updateDevice(ctx context.Context, _ *mcp.CallToolRequest, in Up
 	if err := c.UpdateDevice(ctx, in.DeviceID, operator.UpdateDeviceInput{
 		Name:    in.Name,
 		SpaceID: in.SpaceID,
+		Parked:  in.Parked,
 	}); err != nil {
 		return fail(err)
 	}

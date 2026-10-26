@@ -17,7 +17,7 @@ type ListCredentialsInput struct {
 type MintCredentialInput struct {
 	DeviceID  string `json:"deviceId" jsonschema:"id of the device to mint a credential for"`
 	Label     string `json:"label,omitempty" jsonschema:"human-readable credential label"`
-	ExpiresAt string `json:"expiresAt,omitempty" jsonschema:"optional ISO 8601 expiry timestamp in the future"`
+	ExpiresAt string `json:"expiresAt,omitempty" jsonschema:"optional expiry time in the future, RFC 3339"`
 	DryRun    bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
@@ -35,7 +35,7 @@ type RotateCredentialInput struct {
 	DeviceID     string `json:"deviceId" jsonschema:"id of the device that owns the credential"`
 	CredentialID string `json:"credentialId" jsonschema:"id of the credential to rotate"`
 	Label        string `json:"label,omitempty" jsonschema:"human-readable label for the new credential"`
-	ExpiresAt    string `json:"expiresAt,omitempty" jsonschema:"optional ISO 8601 expiry timestamp in the future"`
+	ExpiresAt    string `json:"expiresAt,omitempty" jsonschema:"optional expiry time in the future, RFC 3339"`
 	Revoke       bool   `json:"revoke,omitempty" jsonschema:"revoke the old credential immediately after rotating"`
 	DryRun       bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
@@ -87,9 +87,13 @@ func (s *Server) mintCredential(ctx context.Context, _ *mcp.CallToolRequest, in 
 	if err != nil {
 		return fail(err)
 	}
+	expiresAt, err := optionalTime("expiresAt", in.ExpiresAt)
+	if err != nil {
+		return fail(err)
+	}
 	cred, err := c.MintCredential(ctx, in.DeviceID, operator.MintCredentialInput{
 		Label:     in.Label,
-		ExpiresAt: in.ExpiresAt,
+		ExpiresAt: expiresAt,
 	})
 	if err != nil {
 		return fail(err)
@@ -118,9 +122,13 @@ func (s *Server) rotateCredential(ctx context.Context, _ *mcp.CallToolRequest, i
 	if err != nil {
 		return fail(err)
 	}
+	expiresAt, err := optionalTime("expiresAt", in.ExpiresAt)
+	if err != nil {
+		return fail(err)
+	}
 	cred, err := c.RotateCredential(ctx, in.DeviceID, in.CredentialID, operator.MintCredentialInput{
 		Label:     in.Label,
-		ExpiresAt: in.ExpiresAt,
+		ExpiresAt: expiresAt,
 	}, in.Revoke)
 	if err != nil {
 		return fail(err)

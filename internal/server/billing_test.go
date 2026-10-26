@@ -8,7 +8,7 @@ import (
 
 func TestBillingTools(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`{"tier":"pro","monthlyTotal":2900,"month":"2026-08","usage":{"devices":{"used":3,"limit":50}}}`), rec)
+	s := testServer(t, 200, envelope(`{"tier":"pro","monthlyTotal":{"amount":2900,"currency":"USD"},"month":"2026-08","usage":{"devices":{"used":3,"limit":50}}}`), rec)
 	if _, out, err := s.getBillingSummary(ctx(), nil, GetBillingSummaryInput{}); err != nil || !out.OK {
 		t.Fatalf("getBillingSummary: %v %+v", err, out)
 	}
@@ -24,7 +24,7 @@ func TestBillingTools(t *testing.T) {
 		t.Fatalf("path %q", rec.path)
 	}
 
-	s = testServer(t, 200, envelope(`{"from":"starter","to":"pro","amountDue":1200,"currency":"usd"}`), rec)
+	s = testServer(t, 200, envelope(`{"from":"starter","to":"pro","amountDue":{"amount":1200,"currency":"USD"}}`), rec)
 	if _, out, err := s.previewTierChange(ctx(), nil, PreviewTierChangeInput{Tier: "pro"}); err != nil || !out.OK {
 		t.Fatalf("previewTierChange: %v %+v", err, out)
 	}
