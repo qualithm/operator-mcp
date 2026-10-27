@@ -412,6 +412,36 @@
     },
     {
       "method": "GET",
+      "path": "/v1/teams/:teamId/scopes",
+      "issue": 604
+    },
+    {
+      "method": "POST",
+      "path": "/v1/teams/:teamId/scopes",
+      "issue": 604
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/teams/:teamId/scopes/:scopeId",
+      "issue": 604
+    },
+    {
+      "method": "GET",
+      "path": "/v1/teams/:teamId/scopes/:scopeId",
+      "issue": 604
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/teams/:teamId/scopes/:scopeId",
+      "issue": 604
+    },
+    {
+      "method": "GET",
+      "path": "/v1/teams/:teamId/scopes/:scopeId/devices",
+      "issue": 604
+    },
+    {
+      "method": "GET",
       "path": "/v1/teams/:teamId/spaces",
       "tool": "list_spaces"
     },
