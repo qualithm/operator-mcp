@@ -91,7 +91,7 @@ func TestNewSendsVersionedUserAgent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("newClient: %v", err)
 	}
-	if _, err := c.ListAuthorities(ctx(), 1, 1); err != nil {
+	if _, err := c.ListAuthorities(ctx(), "", 1); err != nil {
 		t.Fatalf("ListAuthorities: %v", err)
 	}
 	if !strings.HasPrefix(ua, "qualithm-mcp/1.2.3") {
@@ -125,7 +125,7 @@ func TestCodeForStatus(t *testing.T) {
 func TestListAuthorities(t *testing.T) {
 	rec := &record{}
 	s := testServer(t, 200, envelope(`{"current":1,"last":1,"items":[{"id":"auth_1"}]}`), rec)
-	res, out, err := s.listAuthorities(ctx(), nil, ListAuthoritiesInput{Page: 2, Limit: 5})
+	res, out, err := s.listAuthorities(ctx(), nil, ListAuthoritiesInput{Cursor: "c2", Limit: 5})
 	if err != nil || res != nil {
 		t.Fatalf("res=%v err=%v", res, err)
 	}
@@ -135,8 +135,8 @@ func TestListAuthorities(t *testing.T) {
 	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/authorities" {
 		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 	}
-	if !strings.Contains(rec.query, "page=2") || !strings.Contains(rec.query, "limit=5") {
-		t.Fatalf("missing page params: %q", rec.query)
+	if !strings.Contains(rec.query, "cursor=c2") || !strings.Contains(rec.query, "limit=5") {
+		t.Fatalf("missing cursor params: %q", rec.query)
 	}
 }
 
@@ -159,15 +159,15 @@ func TestListEnrollmentsDevicesTokens(t *testing.T) {
 func TestListSpaces(t *testing.T) {
 	rec := &record{}
 	s := testServer(t, 200, envelope(`{"current":1,"last":1,"items":[{"id":"sp_1","zone":"de-fra-a"}]}`), rec)
-	_, out, err := s.listSpaces(ctx(), nil, ListSpacesInput{Page: 2, Limit: 5})
+	_, out, err := s.listSpaces(ctx(), nil, ListSpacesInput{Cursor: "c2", Limit: 5})
 	if err != nil || !out.OK {
 		t.Fatalf("out=%+v err=%v", out, err)
 	}
 	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/spaces" {
 		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 	}
-	if !strings.Contains(rec.query, "page=2") || !strings.Contains(rec.query, "limit=5") {
-		t.Fatalf("missing page params: %q", rec.query)
+	if !strings.Contains(rec.query, "cursor=c2") || !strings.Contains(rec.query, "limit=5") {
+		t.Fatalf("missing cursor params: %q", rec.query)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestGetSpace(t *testing.T) {
 
 func TestListCredentialsAndGetDevice(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`[{"id":"cred_1"}]`), rec)
+	s := testServer(t, 200, envelope(`{"items":[{"id":"cred_1"}],"nextCursor":null}`), rec)
 	if _, out, _ := s.listCredentials(ctx(), nil, ListCredentialsInput{DeviceID: "dev_1"}); !out.OK {
 		t.Error("credentials not ok")
 	}
