@@ -11,7 +11,7 @@ import (
 // ListDevicesInput lists the team's devices, optionally in one space.
 type ListDevicesInput struct {
 	SpaceID string `json:"spaceId,omitempty" jsonschema:"only the devices in this space"`
-	Page    int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Cursor  string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
 	Limit   int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
@@ -44,7 +44,7 @@ type DeleteDeviceInput struct {
 func (s *Server) registerDevices(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_devices",
-		Description: "List the team's devices, optionally only those in one space.",
+		Description: "List the team's devices, optionally only those in one space. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listDevices, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_device",
@@ -71,9 +71,9 @@ func (s *Server) listDevices(ctx context.Context, _ *mcp.CallToolRequest, in Lis
 	}
 	var page operator.Page[operator.Device]
 	if in.SpaceID != "" {
-		page, err = c.ListSpaceDevices(ctx, in.SpaceID, in.Page, in.Limit)
+		page, err = c.ListSpaceDevices(ctx, in.SpaceID, in.Cursor, in.Limit)
 	} else {
-		page, err = c.ListDevices(ctx, in.Page, in.Limit)
+		page, err = c.ListDevices(ctx, in.Cursor, in.Limit)
 	}
 	if err != nil {
 		return fail(err)
