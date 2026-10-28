@@ -11,7 +11,7 @@ import (
 // ListDeviceCommandsInput lists command deliveries for a device.
 type ListDeviceCommandsInput struct {
 	DeviceID string `json:"deviceId" jsonschema:"id of the device to list commands for"`
-	Page     int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Cursor   string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
 	Limit    int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
@@ -34,7 +34,7 @@ type GetDeviceCapabilitiesInput struct {
 func (s *Server) registerCommands(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_device_commands",
-		Description: "List command deliveries for a device (pending, sent, failed).",
+		Description: "List command deliveries for a device (pending, sent, failed). Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listDeviceCommands, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "send_device_command",
@@ -51,7 +51,7 @@ func (s *Server) listDeviceCommands(ctx context.Context, _ *mcp.CallToolRequest,
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListDeviceCommands(ctx, in.DeviceID, in.Page, in.Limit)
+	page, err := c.ListDeviceCommands(ctx, in.DeviceID, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}

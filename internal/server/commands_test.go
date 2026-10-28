@@ -24,7 +24,7 @@ func TestCommandsTools(t *testing.T) {
 		t.Fatalf("request %s body=%q", rec.method, rec.body)
 	}
 
-	s = testServer(t, 200, envelope(`[{"id":"cap_1","key":"power","type":"onoff"}]`), rec)
+	s = testServer(t, 200, envelope(`{"items":[{"id":"cap_1","key":"power","type":"onoff"}],"nextCursor":null}`), rec)
 	if _, out, err := s.getDeviceCapabilities(ctx(), nil, GetDeviceCapabilitiesInput{DeviceID: "dev_1"}); err != nil || !out.OK {
 		t.Fatalf("getDeviceCapabilities: %v %+v", err, out)
 	}

@@ -13,24 +13,24 @@ type GetAccountInput struct{}
 
 // ListCapabilitiesInput lists device capabilities across the team.
 type ListCapabilitiesInput struct {
-	Page  int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
-	Type  string `json:"type,omitempty" jsonschema:"filter by capability type: onoff, range, enum, trigger, or sensor"`
-	Tag   string `json:"tag,omitempty" jsonschema:"filter by capability tag"`
-	Key   string `json:"key,omitempty" jsonschema:"filter by capability key"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Type   string `json:"type,omitempty" jsonschema:"filter by capability type: onoff, range, enum, trigger, or sensor"`
+	Tag    string `json:"tag,omitempty" jsonschema:"filter by capability tag"`
+	Key    string `json:"key,omitempty" jsonschema:"filter by capability key"`
 }
 
 // ListRolesInput lists the caller's team role assignments.
 type ListRolesInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
 // ListSessionsInput lists the caller's authenticated sessions.
 type ListSessionsInput struct {
-	Page           int  `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit          int  `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
-	ThisDeviceOnly bool `json:"thisDeviceOnly,omitempty" jsonschema:"list only the session the token belongs to"`
+	Cursor         string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit          int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	ThisDeviceOnly bool   `json:"thisDeviceOnly,omitempty" jsonschema:"list only the session the token belongs to"`
 }
 
 // GetSessionInput fetches a single session.
@@ -52,15 +52,15 @@ func (s *Server) registerWorkspace(srv *mcp.Server) {
 	}, s.getAccount, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_capabilities",
-		Description: "List device capabilities across the team, optionally filtered by type, tag, or key.",
+		Description: "List device capabilities across the team, optionally filtered by type, tag, or key. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listCapabilities, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_roles",
-		Description: "List the caller's team role assignments.",
+		Description: "List the caller's team role assignments. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listRoles, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_sessions",
-		Description: "List the caller's authenticated sessions.",
+		Description: "List the caller's authenticated sessions. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listSessions, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_session",
@@ -94,11 +94,11 @@ func (s *Server) listCapabilities(ctx context.Context, _ *mcp.CallToolRequest, i
 		return fail(err)
 	}
 	page, err := c.ListCapabilities(ctx, operator.ListCapabilitiesInput{
-		Page:  in.Page,
-		Limit: in.Limit,
-		Type:  in.Type,
-		Tag:   in.Tag,
-		Key:   in.Key,
+		Cursor: in.Cursor,
+		Limit:  in.Limit,
+		Type:   in.Type,
+		Tag:    in.Tag,
+		Key:    in.Key,
 	})
 	if err != nil {
 		return fail(err)
@@ -111,7 +111,7 @@ func (s *Server) listRoles(ctx context.Context, _ *mcp.CallToolRequest, in ListR
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListRoles(ctx, in.Page, in.Limit)
+	page, err := c.ListRoles(ctx, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}
@@ -123,7 +123,7 @@ func (s *Server) listSessions(ctx context.Context, _ *mcp.CallToolRequest, in Li
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListSessions(ctx, in.Page, in.Limit, in.ThisDeviceOnly)
+	page, err := c.ListSessions(ctx, in.Cursor, in.Limit, in.ThisDeviceOnly)
 	if err != nil {
 		return fail(err)
 	}

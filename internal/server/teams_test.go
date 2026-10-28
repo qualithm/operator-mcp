@@ -11,7 +11,7 @@ import (
 func TestTeamsTools(t *testing.T) {
 	rec := &record{}
 	s := testServer(t, 200, envelope(`{"current":1,"items":[{"id":"team_1"}],"last":1}`), rec)
-	if _, out, err := s.listTeams(ctx(), nil, ListTeamsInput{Page: 1, Limit: 5}); err != nil || !out.OK {
+	if _, out, err := s.listTeams(ctx(), nil, ListTeamsInput{Limit: 5}); err != nil || !out.OK {
 		t.Fatalf("listTeams: %v %+v", err, out)
 	}
 	if rec.method != http.MethodGet || rec.path != "/v1/teams" {

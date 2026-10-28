@@ -11,8 +11,8 @@ type GetBillingSummaryInput struct{}
 
 // ListInvoicesInput lists the team's invoices.
 type ListInvoicesInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
 // PreviewTierChangeInput prices a tier change without applying it.
@@ -29,7 +29,7 @@ func (s *Server) registerBilling(srv *mcp.Server) {
 	}, s.getBillingSummary, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_invoices",
-		Description: "List the team's invoices.",
+		Description: "List the team's invoices. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listInvoices, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "preview_tier_change",
@@ -54,7 +54,7 @@ func (s *Server) listInvoices(ctx context.Context, _ *mcp.CallToolRequest, in Li
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListInvoices(ctx, in.Page, in.Limit)
+	page, err := c.ListInvoices(ctx, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}

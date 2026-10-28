@@ -11,7 +11,7 @@ import (
 // ListTeamMembersInput lists active members of a team.
 type ListTeamMembersInput struct {
 	TeamID string `json:"teamId" jsonschema:"id of the team to list members for"`
-	Page   int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
 	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
@@ -46,7 +46,7 @@ type RemoveTeamMemberInput struct {
 // ListTeamInvitesInput lists pending invitations to a team.
 type ListTeamInvitesInput struct {
 	TeamID string `json:"teamId" jsonschema:"id of the team to list invites for"`
-	Page   int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
 	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
@@ -68,7 +68,7 @@ type RevokeTeamInviteInput struct {
 func (s *Server) registerMembers(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_team_members",
-		Description: "List the active members of a team.",
+		Description: "List the active members of a team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listTeamMembers, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "add_team_member",
@@ -88,7 +88,7 @@ func (s *Server) registerMembers(srv *mcp.Server) {
 	}, s.removeTeamMember, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_team_invites",
-		Description: "List pending invitations to a team.",
+		Description: "List pending invitations to a team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listTeamInvites, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_team_invite",
@@ -105,7 +105,7 @@ func (s *Server) listTeamMembers(ctx context.Context, _ *mcp.CallToolRequest, in
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListTeamMembers(ctx, in.TeamID, in.Page, in.Limit)
+	page, err := c.ListTeamMembers(ctx, in.TeamID, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}
@@ -163,7 +163,7 @@ func (s *Server) listTeamInvites(ctx context.Context, _ *mcp.CallToolRequest, in
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListTeamInvites(ctx, in.TeamID, in.Page, in.Limit)
+	page, err := c.ListTeamInvites(ctx, in.TeamID, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}

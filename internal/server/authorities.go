@@ -10,8 +10,8 @@ import (
 
 // ListAuthoritiesInput lists certificate authorities.
 type ListAuthoritiesInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
 // CreateAuthorityInput creates a certificate authority.
@@ -31,7 +31,7 @@ type RevokeAuthorityInput struct {
 func (s *Server) registerAuthorities(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_authorities",
-		Description: "List device certificate authorities for the token's team.",
+		Description: "List device certificate authorities for the token's team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listAuthorities, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_authority",
@@ -48,7 +48,7 @@ func (s *Server) listAuthorities(ctx context.Context, _ *mcp.CallToolRequest, in
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListAuthorities(ctx, in.Page, in.Limit)
+	page, err := c.ListAuthorities(ctx, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}
