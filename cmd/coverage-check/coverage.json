@@ -346,6 +346,11 @@
       "noTool": "auth-flow"
     },
     {
+      "method": "POST",
+      "path": "/oauth/token",
+      "noTool": "auth-flow"
+    },
+    {
       "method": "GET",
       "path": "/openapi.json",
       "noTool": "infra"
