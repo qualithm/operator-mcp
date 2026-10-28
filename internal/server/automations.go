@@ -11,8 +11,8 @@ import (
 
 // ListAutomationsInput lists automations for the token's team.
 type ListAutomationsInput struct {
-	Page  int `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
-	Limit int `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
+	Cursor string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
+	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
 // CreateAutomationInput creates an automation from a full payload, or from a
@@ -60,7 +60,7 @@ type RunAutomationInput struct {
 // ListAutomationRunsInput lists execution summaries for an automation.
 type ListAutomationRunsInput struct {
 	AutomationID string `json:"automationId" jsonschema:"id of the automation to list runs for"`
-	Page         int    `json:"page,omitempty" jsonschema:"1-based page number; 0 uses the server default"`
+	Cursor       string `json:"cursor,omitempty" jsonschema:"the nextCursor from the previous page; empty for the first page"`
 	Limit        int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
@@ -88,7 +88,7 @@ type CreateAutomationTriggerSecretInput struct {
 func (s *Server) registerAutomations(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_automations",
-		Description: "List automations for the token's team.",
+		Description: "List automations for the token's team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listAutomations, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_automation",
@@ -112,7 +112,7 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 	}, s.runAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_automation_runs",
-		Description: "List execution summaries for an automation.",
+		Description: "List execution summaries for an automation. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listAutomationRuns, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_automation_templates",
@@ -133,7 +133,7 @@ func (s *Server) listAutomations(ctx context.Context, _ *mcp.CallToolRequest, in
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListAutomations(ctx, in.Page, in.Limit)
+	page, err := c.ListAutomations(ctx, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}
@@ -258,7 +258,7 @@ func (s *Server) listAutomationRuns(ctx context.Context, _ *mcp.CallToolRequest,
 	if err != nil {
 		return fail(err)
 	}
-	page, err := c.ListAutomationRuns(ctx, in.AutomationID, in.Page, in.Limit)
+	page, err := c.ListAutomationRuns(ctx, in.AutomationID, in.Cursor, in.Limit)
 	if err != nil {
 		return fail(err)
 	}
