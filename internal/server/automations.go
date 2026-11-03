@@ -16,11 +16,11 @@ type ListAutomationsInput struct {
 }
 
 // CreateAutomationInput creates an automation from a full payload, or from a
-// catalogue template the platform expands. Omit spaceId for a team-wide
+// catalogue template the platform expands. Omit scopeId for a team-wide
 // automation.
 type CreateAutomationInput struct {
 	Name     string          `json:"name" jsonschema:"automation name"`
-	SpaceID  string          `json:"spaceId,omitempty" jsonschema:"id of the space to scope the automation to; omit for team-wide"`
+	ScopeID  string          `json:"scopeId,omitempty" jsonschema:"id of the scope to limit the automation to; omit for team-wide"`
 	Payload  json.RawMessage `json:"payload,omitempty" jsonschema:"automation document: trigger plus ordered condition/action chain; exclusive with template"`
 	Template string          `json:"template,omitempty" jsonschema:"id of the catalogue template to expand; exclusive with payload"`
 	Params   json.RawMessage `json:"params,omitempty" jsonschema:"template slot values, used with template"`
@@ -38,7 +38,7 @@ type UpdateAutomationInput struct {
 	AutomationID string          `json:"automationId" jsonschema:"id of the automation to update"`
 	Name         string          `json:"name,omitempty" jsonschema:"new automation name"`
 	Enabled      *bool           `json:"enabled,omitempty" jsonschema:"true so its trigger fires, false to pause it without deleting it"`
-	SpaceID      string          `json:"spaceId,omitempty" jsonschema:"new space id to scope the automation to"`
+	ScopeID      string          `json:"scopeId,omitempty" jsonschema:"id of the new scope to limit the automation to"`
 	Payload      json.RawMessage `json:"payload,omitempty" jsonschema:"new trigger+chain document"`
 	Template     string          `json:"template,omitempty" jsonschema:"template id to re-expand the chain from"`
 	Params       json.RawMessage `json:"params,omitempty" jsonschema:"template slot values, required with template"`
@@ -100,7 +100,7 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 	}, s.getAutomation, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "update_automation",
-		Description: "Update an automation's name, space, chain or template params, or enable or disable it.",
+		Description: "Update an automation's name, scope, chain or template params, or enable or disable it.",
 	}, s.updateAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "delete_automation",
@@ -162,9 +162,9 @@ func (s *Server) createAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 		}
 		return ok(a)
 	}
-	var spaceID *string
-	if in.SpaceID != "" {
-		spaceID = &in.SpaceID
+	var scopeID *string
+	if in.ScopeID != "" {
+		scopeID = &in.ScopeID
 	}
 	var payload operator.AutomationPayload
 	if len(in.Payload) > 0 {
@@ -174,7 +174,7 @@ func (s *Server) createAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 	}
 	a, err := c.CreateAutomation(ctx, operator.CreateAutomationInput{
 		Name:    in.Name,
-		SpaceID: spaceID,
+		ScopeID: scopeID,
 		Payload: payload,
 	})
 	if err != nil {
@@ -200,14 +200,14 @@ func (s *Server) updateAutomation(ctx context.Context, _ *mcp.CallToolRequest, i
 	if err != nil {
 		return fail(err)
 	}
-	var spaceID *string
-	if in.SpaceID != "" {
-		spaceID = &in.SpaceID
+	var scopeID *string
+	if in.ScopeID != "" {
+		scopeID = &in.ScopeID
 	}
 	upd := operator.UpdateAutomationInput{
 		Name:     in.Name,
 		Enabled:  in.Enabled,
-		SpaceID:  spaceID,
+		ScopeID:  scopeID,
 		Template: in.Template,
 	}
 	if len(in.Payload) > 0 {

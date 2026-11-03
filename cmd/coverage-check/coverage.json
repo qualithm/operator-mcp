@@ -418,57 +418,57 @@
     {
       "method": "GET",
       "path": "/v1/teams/:teamId/scopes",
-      "issue": 604
+      "tool": "list_scopes"
     },
     {
       "method": "POST",
       "path": "/v1/teams/:teamId/scopes",
-      "issue": 604
+      "tool": "create_scope"
     },
     {
       "method": "DELETE",
       "path": "/v1/teams/:teamId/scopes/:scopeId",
-      "issue": 604
+      "tool": "delete_scope"
     },
     {
       "method": "GET",
       "path": "/v1/teams/:teamId/scopes/:scopeId",
-      "issue": 604
+      "tool": "get_scope"
     },
     {
       "method": "PATCH",
       "path": "/v1/teams/:teamId/scopes/:scopeId",
-      "issue": 604
+      "tool": "update_scope"
     },
     {
       "method": "GET",
       "path": "/v1/teams/:teamId/scopes/:scopeId/devices",
-      "issue": 604
+      "tool": "list_scope_devices"
     },
     {
       "method": "GET",
       "path": "/v1/teams/:teamId/spaces",
-      "tool": "list_spaces"
+      "issue": 2611
     },
     {
       "method": "POST",
       "path": "/v1/teams/:teamId/spaces",
-      "tool": "create_space"
+      "issue": 2611
     },
     {
       "method": "DELETE",
       "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "tool": "delete_space"
+      "issue": 2611
     },
     {
       "method": "GET",
       "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "tool": "get_space"
+      "issue": 2611
     },
     {
       "method": "PATCH",
       "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "tool": "update_space"
+      "issue": 2611
     },
     {
       "method": "GET",

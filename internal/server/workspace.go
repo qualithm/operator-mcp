@@ -72,7 +72,7 @@ func (s *Server) registerWorkspace(srv *mcp.Server) {
 	}, s.getCommunicationPreferences, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_zones",
-		Description: "List the environment's device zones, open zones first. Only an open zone accepts create_space.",
+		Description: "List the environment's device zones, open zones first. Only an open zone accepts a top-level create_scope.",
 	}, s.listZones, false)
 }
 

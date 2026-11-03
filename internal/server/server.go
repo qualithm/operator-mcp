@@ -117,7 +117,7 @@ func (s *Server) MCPServer(version string) *mcp.Server {
 	s.registerEnrollments(srv)
 	s.registerCredentials(srv)
 	s.registerDevices(srv)
-	s.registerSpaces(srv)
+	s.registerScopes(srv)
 	s.registerTeams(srv)
 	s.registerMembers(srv)
 	s.registerDashboards(srv)

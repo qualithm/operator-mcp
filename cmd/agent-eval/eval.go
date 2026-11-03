@@ -64,7 +64,7 @@ type publisher interface {
 // Config carries everything the eval needs that the product surfaces do not
 // provide. Each field the harness had to be given is a friction entry.
 type Config struct {
-	// Zone creates the eval space in this device zone when the team has none.
+	// Zone creates the eval scope in this device zone when the team has none.
 	// Empty takes the first open zone list_zones reports.
 	Zone string
 	// VerifyTimeout bounds the telemetry read-back poll.
@@ -135,28 +135,28 @@ func (r *evalRunner) run(ctx context.Context) {
 	value := float64(time.Now().UnixMilli()%1000000) / 100
 	nowMS := time.Now().UnixMilli()
 
-	var spaceID string
-	needsSpace := false
-	if err := r.step("list_spaces", func() (string, error) {
+	var scopeID string
+	needsScope := false
+	if err := r.step("list_scopes", func() (string, error) {
 		var page struct {
 			Items []struct {
 				ID string `json:"id"`
 			} `json:"items"`
 		}
-		if err := r.tools.callTool(ctx, "list_spaces", map[string]any{}, &page); err != nil {
+		if err := r.tools.callTool(ctx, "list_scopes", map[string]any{}, &page); err != nil {
 			return "", err
 		}
 		if len(page.Items) == 0 {
-			// An empty team is not a failure; the eval creates the space.
-			needsSpace = true
-			return "no spaces yet", nil
+			// An empty team is not a failure; the eval creates the scope.
+			needsScope = true
+			return "no scopes yet", nil
 		}
-		spaceID = page.Items[0].ID
-		return fmt.Sprintf("space %s", spaceID), nil
+		scopeID = page.Items[0].ID
+		return fmt.Sprintf("scope %s", scopeID), nil
 	}); err != nil {
 		return
 	}
-	if needsSpace {
+	if needsScope {
 		zone := r.cfg.Zone
 		if zone == "" {
 			if err := r.step("list_zones", func() (string, error) {
@@ -180,15 +180,15 @@ func (r *evalRunner) run(ctx context.Context) {
 				return
 			}
 		}
-		if err := r.step("create_space", func() (string, error) {
-			var space struct {
+		if err := r.step("create_scope", func() (string, error) {
+			var scope struct {
 				ID string `json:"id"`
 			}
-			if err := r.tools.callTool(ctx, "create_space", map[string]any{"zone": zone}, &space); err != nil {
+			if err := r.tools.callTool(ctx, "create_scope", map[string]any{"zone": zone}, &scope); err != nil {
 				return "", err
 			}
-			spaceID = space.ID
-			return fmt.Sprintf("space %s", spaceID), nil
+			scopeID = scope.ID
+			return fmt.Sprintf("scope %s", scopeID), nil
 		}); err != nil {
 			return
 		}
@@ -204,7 +204,7 @@ func (r *evalRunner) run(ctx context.Context) {
 			Code string `json:"code"`
 		}
 		if err := r.tools.callTool(ctx, "create_enrollment", map[string]any{
-			"spaceId":          spaceID,
+			"scopeId":          scopeID,
 			"label":            "agent-eval",
 			"expiresInMinutes": 15,
 		}, &out); err != nil {

@@ -158,7 +158,7 @@ func TestConnectMCPServer(t *testing.T) {
 	defer cleanup()
 	// The server is up: a tool call with no reachable API fails cleanly through
 	// the envelope, proving the transport both ways.
-	err = tools.callTool(ctx, "list_spaces", map[string]any{}, nil)
+	err = tools.callTool(ctx, "list_scopes", map[string]any{}, nil)
 	if err == nil {
 		t.Fatal("want an API-unreachable error")
 	}
