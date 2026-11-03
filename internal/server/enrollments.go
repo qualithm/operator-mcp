@@ -16,7 +16,7 @@ type ListEnrollmentsInput struct {
 
 // CreateEnrollmentInput creates a one-time enrollment claim code.
 type CreateEnrollmentInput struct {
-	SpaceID          string `json:"spaceId" jsonschema:"id of the space the device will enroll into"`
+	ScopeID          string `json:"scopeId" jsonschema:"id of the scope the device will enroll into"`
 	Label            string `json:"label,omitempty" jsonschema:"human-readable label for the enrollment"`
 	ExpiresInMinutes int    `json:"expiresInMinutes,omitempty" jsonschema:"lifetime in minutes; 0 uses the server default of 1440"`
 	DryRun           bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
@@ -61,7 +61,7 @@ func (s *Server) createEnrollment(ctx context.Context, _ *mcp.CallToolRequest, i
 		return fail(err)
 	}
 	e, err := c.CreateEnrollment(ctx, operator.CreateEnrollmentInput{
-		SpaceID:          in.SpaceID,
+		ScopeID:          in.ScopeID,
 		Label:            in.Label,
 		ExpiresInMinutes: in.ExpiresInMinutes,
 	})

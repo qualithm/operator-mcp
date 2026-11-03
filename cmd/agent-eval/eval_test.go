@@ -79,7 +79,7 @@ func (p *recordingPublisher) publishTelemetry(_ context.Context, _ claimResult, 
 	return nil
 }
 
-var spacesWithOne = respond(map[string]any{"items": []map[string]any{{"id": "spc_1"}}})
+var scopesWithOne = respond(map[string]any{"items": []map[string]any{{"id": "sco_1"}}})
 
 var enrollmentOK = respond(map[string]any{"enrollment": map[string]any{"id": "enr_1"}, "code": "qmc_code"})
 
@@ -88,7 +88,7 @@ var deleteOK = respond(nil)
 func TestRunHappyPath(t *testing.T) {
 	var publishedValue float64
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces":       spacesWithOne,
+		"list_scopes":       scopesWithOne,
 		"create_enrollment": enrollmentOK,
 		// Read-back answers with the value the publisher recorded, as the real
 		// telemetry store would once the reading lands.
@@ -108,7 +108,7 @@ func TestRunHappyPath(t *testing.T) {
 	if !report.OK {
 		t.Fatalf("report = %+v", report)
 	}
-	wantSteps := []string{"list_spaces", "create_enrollment", "claim", "connect_publish", "verify_telemetry"}
+	wantSteps := []string{"list_scopes", "create_enrollment", "claim", "connect_publish", "verify_telemetry"}
 	if len(report.Steps) != len(wantSteps) {
 		t.Fatalf("steps = %v", report.Steps)
 	}
@@ -123,19 +123,19 @@ func TestRunHappyPath(t *testing.T) {
 	}
 }
 
-func TestRunCreatesSpaceWhenNone(t *testing.T) {
+func TestRunCreatesScopeWhenNone(t *testing.T) {
 	var publishedValue float64
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces": respond(map[string]any{"items": []any{}}),
-		"create_space": func(args map[string]any) (any, error) {
+		"list_scopes": respond(map[string]any{"items": []any{}}),
+		"create_scope": func(args map[string]any) (any, error) {
 			if args["zone"] != "sandbox" {
 				return nil, fmt.Errorf("wrong zone %v", args["zone"])
 			}
-			return map[string]any{"id": "spc_new"}, nil
+			return map[string]any{"id": "sco_new"}, nil
 		},
 		"create_enrollment": func(args map[string]any) (any, error) {
-			if args["spaceId"] != "spc_new" {
-				return nil, fmt.Errorf("wrong space %v", args["spaceId"])
+			if args["scopeId"] != "sco_new" {
+				return nil, fmt.Errorf("wrong scope %v", args["scopeId"])
 			}
 			return map[string]any{"enrollment": map[string]any{"id": "enr_1"}, "code": "qmc_code"}, nil
 		},
@@ -160,23 +160,23 @@ func TestRunCreatesSpaceWhenNone(t *testing.T) {
 	}
 }
 
-func TestRunCreatesSpaceInAnOpenZone(t *testing.T) {
+func TestRunCreatesScopeInAnOpenZone(t *testing.T) {
 	var publishedValue float64
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces": respond(map[string]any{"items": []any{}}),
+		"list_scopes": respond(map[string]any{"items": []any{}}),
 		"list_zones": respond(map[string]any{"zones": []any{
 			map[string]any{"id": "de-fra-a", "open": false},
 			map[string]any{"id": "sg-sin-a", "open": true},
 		}}),
-		"create_space": func(args map[string]any) (any, error) {
+		"create_scope": func(args map[string]any) (any, error) {
 			if args["zone"] != "sg-sin-a" {
 				return nil, fmt.Errorf("wrong zone %v", args["zone"])
 			}
-			return map[string]any{"id": "spc_new"}, nil
+			return map[string]any{"id": "sco_new"}, nil
 		},
 		"create_enrollment": func(args map[string]any) (any, error) {
-			if args["spaceId"] != "spc_new" {
-				return nil, fmt.Errorf("wrong space %v", args["spaceId"])
+			if args["scopeId"] != "sco_new" {
+				return nil, fmt.Errorf("wrong scope %v", args["scopeId"])
 			}
 			return map[string]any{"enrollment": map[string]any{"id": "enr_1"}, "code": "qmc_code"}, nil
 		},
@@ -193,7 +193,7 @@ func TestRunCreatesSpaceInAnOpenZone(t *testing.T) {
 	if !report.OK {
 		t.Fatalf("report = %+v", report)
 	}
-	if report.Steps[1].Name != "list_zones" || report.Steps[2].Name != "create_space" {
+	if report.Steps[1].Name != "list_zones" || report.Steps[2].Name != "create_scope" {
 		t.Fatalf("steps = %+v", report.Steps)
 	}
 	// Only the broker host still comes from configuration.
@@ -214,7 +214,7 @@ func TestRunStopsWithoutAnOpenZone(t *testing.T) {
 	for name, listZones := range cases {
 		t.Run(name, func(t *testing.T) {
 			tools := &fakeTools{responses: map[string]toolFunc{
-				"list_spaces": respond(map[string]any{"items": []any{}}),
+				"list_scopes": respond(map[string]any{"items": []any{}}),
 				"list_zones":  listZones,
 			}}
 			report := Run(context.Background(), tools,
@@ -234,7 +234,7 @@ func TestRunStopsWithoutAnOpenZone(t *testing.T) {
 
 func TestRunClaimFailureStopsAndRevokes(t *testing.T) {
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces":       spacesWithOne,
+		"list_scopes":       scopesWithOne,
 		"create_enrollment": enrollmentOK,
 		"revoke_enrollment": respond(nil),
 	}}
@@ -257,7 +257,7 @@ func TestRunClaimFailureStopsAndRevokes(t *testing.T) {
 
 func TestRunPublishFailureDeletesDevice(t *testing.T) {
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces":       spacesWithOne,
+		"list_scopes":       scopesWithOne,
 		"create_enrollment": enrollmentOK,
 		"delete_device":     deleteOK,
 	}}
@@ -279,7 +279,7 @@ func TestRunPublishFailureDeletesDevice(t *testing.T) {
 
 func TestRunVerifyTimesOut(t *testing.T) {
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces":       spacesWithOne,
+		"list_scopes":       scopesWithOne,
 		"create_enrollment": enrollmentOK,
 		// The point never carries the eval's value: read-back never confirms.
 		"get_telemetry": respond([]map[string]any{{"ts": 1, "value": -1}}),
@@ -301,7 +301,7 @@ func TestRunVerifyTimesOut(t *testing.T) {
 
 func TestRunToolFailureStopsEarly(t *testing.T) {
 	tools := &fakeTools{responses: map[string]toolFunc{
-		"list_spaces": failWith(errors.New("list_spaces: auth: bad token")),
+		"list_scopes": failWith(errors.New("list_scopes: auth: bad token")),
 	}}
 	report := Run(context.Background(), tools,
 		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
@@ -311,7 +311,7 @@ func TestRunToolFailureStopsEarly(t *testing.T) {
 	if report.OK {
 		t.Fatal("want failure")
 	}
-	if len(report.Steps) != 1 || report.Steps[0].Name != "list_spaces" {
+	if len(report.Steps) != 1 || report.Steps[0].Name != "list_scopes" {
 		t.Fatalf("steps = %+v", report.Steps)
 	}
 }

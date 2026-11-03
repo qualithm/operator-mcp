@@ -35,7 +35,7 @@ func runMain() int {
 	fs.StringVar(&brokerHost, "broker-host", envOr("AGENT_EVAL_BROKER_HOST", "gw.sandbox-sg-sin-a.qualithm.com"), "device gateway host")
 	fs.IntVar(&brokerPort, "broker-port", 8883, "device gateway TLS port")
 	fs.StringVar(&token, "token", os.Getenv("QUALITHM_API_TOKEN"), "member API token for the eval team")
-	fs.StringVar(&zone, "zone", os.Getenv("AGENT_EVAL_ZONE"), "device zone for the eval space when the team has none")
+	fs.StringVar(&zone, "zone", os.Getenv("AGENT_EVAL_ZONE"), "device zone for the eval scope when the team has none")
 	fs.StringVar(&outPath, "out", "", "write the JSON report here (default: stdout only)")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return exitCodeConfig
