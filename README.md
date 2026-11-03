@@ -5,7 +5,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/qualithm/operator-mcp.svg)](https://pkg.go.dev/github.com/qualithm/operator-mcp)
 
 Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
-management API — teams, members, spaces, devices, credentials, enrollments, authorities, API tokens,
+management API — teams, members, scopes, devices, credentials, enrollments, authorities, API tokens,
 automations, dashboards, observability, and read-only workspace and billing state — as MCP tools
 over stdio, backed by the same `operator` client that powers the `qualithm` CLI, so the human and
 agent surfaces never diverge.
@@ -78,7 +78,7 @@ Register it with an MCP-capable agent, for example:
 | credentials         | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential`                                                                                                                                             |
 | devices             | `list_devices` · `get_device` · `create_device` · `update_device` · `delete_device`                                                                                                                                                           |
 | device commands     | `list_device_commands` · `send_device_command` · `get_device_capabilities`                                                                                                                                                                    |
-| spaces              | `list_spaces` · `get_space` · `create_space` · `update_space` · `delete_space`                                                                                                                                                                |
+| scopes              | `list_scopes` · `get_scope` · `create_scope` · `update_scope` · `delete_scope` · `list_scope_devices`                                                                                                                                         |
 | teams               | `list_teams` · `create_team` · `get_team` · `update_team` · `delete_team` · `get_team_device_state`                                                                                                                                           |
 | members & invites   | `list_team_members` · `add_team_member` · `get_team_member` · `update_team_member` · `remove_team_member` · `list_team_invites` · `create_team_invite` · `revoke_team_invite`                                                                 |
 | automations         | `list_automations` · `create_automation` · `get_automation` · `update_automation` · `delete_automation` · `run_automation` · `list_automation_runs` · `list_automation_templates` · `trigger_automation` · `create_automation_trigger_secret` |

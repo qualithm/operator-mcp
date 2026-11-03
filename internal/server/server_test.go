@@ -148,22 +148,22 @@ func TestListEnrollmentsDevicesTokens(t *testing.T) {
 	if _, out, _ := s.listDevices(ctx(), nil, ListDevicesInput{}); !out.OK {
 		t.Error("devices not ok")
 	}
-	if _, out, _ := s.listDevices(ctx(), nil, ListDevicesInput{SpaceID: "sp_1"}); !out.OK {
-		t.Error("space devices not ok")
+	if _, out, _ := s.listDevices(ctx(), nil, ListDevicesInput{ScopeID: "sco_1"}); !out.OK {
+		t.Error("scope devices not ok")
 	}
 	if _, out, _ := s.listAPITokens(ctx(), nil, ListAPITokensInput{}); !out.OK {
 		t.Error("tokens not ok")
 	}
 }
 
-func TestListSpaces(t *testing.T) {
+func TestListScopes(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`{"current":1,"last":1,"items":[{"id":"sp_1","zone":"de-fra-a"}]}`), rec)
-	_, out, err := s.listSpaces(ctx(), nil, ListSpacesInput{Cursor: "c2", Limit: 5})
+	s := testServer(t, 200, envelope(`{"current":1,"last":1,"items":[{"id":"sco_1","zone":"de-fra-a"}]}`), rec)
+	_, out, err := s.listScopes(ctx(), nil, ListScopesInput{Cursor: "c2", Limit: 5})
 	if err != nil || !out.OK {
 		t.Fatalf("out=%+v err=%v", out, err)
 	}
-	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/spaces" {
+	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/scopes" {
 		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
 	}
 	if !strings.Contains(rec.query, "cursor=c2") || !strings.Contains(rec.query, "limit=5") {
@@ -171,15 +171,51 @@ func TestListSpaces(t *testing.T) {
 	}
 }
 
-func TestGetSpace(t *testing.T) {
+func TestGetScope(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`{"id":"sp_1","name":"edge"}`), rec)
-	_, out, err := s.getSpace(ctx(), nil, GetSpaceInput{SpaceID: "sp_1"})
+	s := testServer(t, 200, envelope(`{"id":"sco_1","name":"edge"}`), rec)
+	_, out, err := s.getScope(ctx(), nil, GetScopeInput{ScopeID: "sco_1"})
 	if err != nil || !out.OK {
 		t.Fatalf("out=%+v err=%v", out, err)
 	}
-	if rec.path != "/v1/teams/team_1/spaces/sp_1" {
+	if rec.path != "/v1/teams/team_1/scopes/sco_1" {
 		t.Fatalf("path = %q", rec.path)
+	}
+}
+
+func TestCreateChildScope(t *testing.T) {
+	rec := &record{}
+	s := testServer(t, 201, envelope(`{"id":"sco_2","parentId":"sco_1","zone":"de-fra-a"}`), rec)
+	_, out, err := s.createScope(ctx(), nil, CreateScopeInput{ParentID: "sco_1"})
+	if err != nil || !out.OK {
+		t.Fatalf("out=%+v err=%v", out, err)
+	}
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/scopes" {
+		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
+	}
+	if !strings.Contains(rec.body, `"parentId":"sco_1"`) || strings.Contains(rec.body, `"zone"`) {
+		t.Fatalf("body = %s", rec.body)
+	}
+}
+
+// TestListScopeDevices proves list_scope_devices reads the scope's subtree
+// route, not the flat device filter that stops at the scope itself.
+func TestListScopeDevices(t *testing.T) {
+	rec := &record{}
+	s := testServer(t, 200, envelope(`{"items":[{"id":"dev_1","scopeId":"sco_1"},{"id":"dev_2","scopeId":"sco_2"}],"nextCursor":null}`), rec)
+	_, out, err := s.listScopeDevices(ctx(), nil, ListScopeDevicesInput{ScopeID: "sco_1", Cursor: "c2", Limit: 5})
+	if err != nil || !out.OK {
+		t.Fatalf("out=%+v err=%v", out, err)
+	}
+	if rec.method != http.MethodGet || rec.path != "/v1/teams/team_1/scopes/sco_1/devices" {
+		t.Fatalf("unexpected request %s %s", rec.method, rec.path)
+	}
+	if !strings.Contains(rec.query, "cursor=c2") || !strings.Contains(rec.query, "limit=5") {
+		t.Fatalf("missing cursor params: %q", rec.query)
+	}
+	page, ok := out.Data.(operator.Page[operator.Device])
+	if !ok || len(page.Items) != 2 || page.Items[1].ScopeID != "sco_2" {
+		t.Fatalf("subtree devices not returned: %+v", out.Data)
 	}
 }
 
@@ -223,7 +259,7 @@ func TestMutationsApplied(t *testing.T) {
 		fn   func() Result
 	}{
 		{"create_enrollment", func() Result {
-			_, o, _ := s.createEnrollment(ctx(), nil, CreateEnrollmentInput{SpaceID: "sp_1"})
+			_, o, _ := s.createEnrollment(ctx(), nil, CreateEnrollmentInput{ScopeID: "sco_1"})
 			return o
 		}},
 		{"revoke_enrollment", func() Result {
@@ -251,7 +287,7 @@ func TestMutationsApplied(t *testing.T) {
 			return o
 		}},
 		{"create_device", func() Result {
-			_, o, _ := s.createDevice(ctx(), nil, CreateDeviceInput{SpaceID: "sp_1"})
+			_, o, _ := s.createDevice(ctx(), nil, CreateDeviceInput{ScopeID: "sco_1"})
 			return o
 		}},
 		{"update_device", func() Result {
@@ -262,16 +298,16 @@ func TestMutationsApplied(t *testing.T) {
 			_, o, _ := s.deleteDevice(ctx(), nil, DeleteDeviceInput{DeviceID: "dev_1"})
 			return o
 		}},
-		{"create_space", func() Result {
-			_, o, _ := s.createSpace(ctx(), nil, CreateSpaceInput{Zone: "de-fra-a"})
+		{"create_scope", func() Result {
+			_, o, _ := s.createScope(ctx(), nil, CreateScopeInput{Zone: "de-fra-a"})
 			return o
 		}},
-		{"update_space", func() Result {
-			_, o, _ := s.updateSpace(ctx(), nil, UpdateSpaceInput{SpaceID: "sp_1", Name: "hall"})
+		{"update_scope", func() Result {
+			_, o, _ := s.updateScope(ctx(), nil, UpdateScopeInput{ScopeID: "sco_1", Name: "hall"})
 			return o
 		}},
-		{"delete_space", func() Result {
-			_, o, _ := s.deleteSpace(ctx(), nil, DeleteSpaceInput{SpaceID: "sp_1"})
+		{"delete_scope", func() Result {
+			_, o, _ := s.deleteScope(ctx(), nil, DeleteScopeInput{ScopeID: "sco_1"})
 			return o
 		}},
 		{"revoke_api_token", func() Result {
@@ -291,7 +327,7 @@ func TestMutationsApplied(t *testing.T) {
 func TestDryRunReportsPlannedAction(t *testing.T) {
 	rec := &record{}
 	s := testServer(t, 200, envelope(`{}`), rec)
-	_, out, err := s.createDevice(ctx(), nil, CreateDeviceInput{SpaceID: "sp_1", DryRun: true})
+	_, out, err := s.createDevice(ctx(), nil, CreateDeviceInput{ScopeID: "sco_1", DryRun: true})
 	if err != nil {
 		t.Fatalf("err=%v", err)
 	}
@@ -383,7 +419,7 @@ func allHandlers(s *Server) []handlerCall {
 			return s.listEnrollments(ctx(), nil, ListEnrollmentsInput{})
 		}},
 		{"create_enrollment", func() (*mcp.CallToolResult, Result, error) {
-			return s.createEnrollment(ctx(), nil, CreateEnrollmentInput{SpaceID: "sp_1"})
+			return s.createEnrollment(ctx(), nil, CreateEnrollmentInput{ScopeID: "sco_1"})
 		}},
 		{"revoke_enrollment", func() (*mcp.CallToolResult, Result, error) {
 			return s.revokeEnrollment(ctx(), nil, RevokeEnrollmentInput{EnrollmentID: "en_1"})
@@ -406,11 +442,14 @@ func allHandlers(s *Server) []handlerCall {
 		{"list_devices", func() (*mcp.CallToolResult, Result, error) {
 			return s.listDevices(ctx(), nil, ListDevicesInput{})
 		}},
+		{"list_scope_devices", func() (*mcp.CallToolResult, Result, error) {
+			return s.listScopeDevices(ctx(), nil, ListScopeDevicesInput{ScopeID: "sco_1"})
+		}},
 		{"get_device", func() (*mcp.CallToolResult, Result, error) {
 			return s.getDevice(ctx(), nil, GetDeviceInput{DeviceID: "dev_1"})
 		}},
 		{"create_device", func() (*mcp.CallToolResult, Result, error) {
-			return s.createDevice(ctx(), nil, CreateDeviceInput{SpaceID: "sp_1"})
+			return s.createDevice(ctx(), nil, CreateDeviceInput{ScopeID: "sco_1"})
 		}},
 		{"update_device", func() (*mcp.CallToolResult, Result, error) {
 			return s.updateDevice(ctx(), nil, UpdateDeviceInput{DeviceID: "dev_1", Name: "n"})
@@ -418,20 +457,20 @@ func allHandlers(s *Server) []handlerCall {
 		{"delete_device", func() (*mcp.CallToolResult, Result, error) {
 			return s.deleteDevice(ctx(), nil, DeleteDeviceInput{DeviceID: "dev_1"})
 		}},
-		{"list_spaces", func() (*mcp.CallToolResult, Result, error) {
-			return s.listSpaces(ctx(), nil, ListSpacesInput{})
+		{"list_scopes", func() (*mcp.CallToolResult, Result, error) {
+			return s.listScopes(ctx(), nil, ListScopesInput{})
 		}},
-		{"get_space", func() (*mcp.CallToolResult, Result, error) {
-			return s.getSpace(ctx(), nil, GetSpaceInput{SpaceID: "sp_1"})
+		{"get_scope", func() (*mcp.CallToolResult, Result, error) {
+			return s.getScope(ctx(), nil, GetScopeInput{ScopeID: "sco_1"})
 		}},
-		{"create_space", func() (*mcp.CallToolResult, Result, error) {
-			return s.createSpace(ctx(), nil, CreateSpaceInput{Zone: "de-fra-a"})
+		{"create_scope", func() (*mcp.CallToolResult, Result, error) {
+			return s.createScope(ctx(), nil, CreateScopeInput{Zone: "de-fra-a"})
 		}},
-		{"update_space", func() (*mcp.CallToolResult, Result, error) {
-			return s.updateSpace(ctx(), nil, UpdateSpaceInput{SpaceID: "sp_1", Name: "hall"})
+		{"update_scope", func() (*mcp.CallToolResult, Result, error) {
+			return s.updateScope(ctx(), nil, UpdateScopeInput{ScopeID: "sco_1", Name: "hall"})
 		}},
-		{"delete_space", func() (*mcp.CallToolResult, Result, error) {
-			return s.deleteSpace(ctx(), nil, DeleteSpaceInput{SpaceID: "sp_1"})
+		{"delete_scope", func() (*mcp.CallToolResult, Result, error) {
+			return s.deleteScope(ctx(), nil, DeleteScopeInput{ScopeID: "sco_1"})
 		}},
 		{"list_api_tokens", func() (*mcp.CallToolResult, Result, error) {
 			return s.listAPITokens(ctx(), nil, ListAPITokensInput{})
@@ -528,7 +567,7 @@ func TestNewProtocolNegotiation(t *testing.T) {
 
 		dry, err := session.CallTool(ctx(), &mcp.CallToolParams{
 			Name:      "create_device",
-			Arguments: map[string]any{"spaceId": "sp_1", "dryRun": true},
+			Arguments: map[string]any{"scopeId": "sco_1", "dryRun": true},
 		})
 		if err != nil || dry.IsError {
 			t.Fatalf("create_device dry-run: err=%v isError=%v", err, dry.IsError)

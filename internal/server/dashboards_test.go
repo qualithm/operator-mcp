@@ -8,7 +8,7 @@ import (
 
 func TestDashboardsTools(t *testing.T) {
 	rec := &record{}
-	s := testServer(t, 200, envelope(`{"current":1,"items":[{"id":"dash_1","spaceId":null}],"last":1}`), rec)
+	s := testServer(t, 200, envelope(`{"current":1,"items":[{"id":"dash_1","scopeId":null}],"last":1}`), rec)
 	if _, out, err := s.listDashboards(ctx(), nil, ListDashboardsInput{}); err != nil || !out.OK {
 		t.Fatalf("listDashboards: %v %+v", err, out)
 	}
