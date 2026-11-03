@@ -31,7 +31,7 @@ func TestObservabilityTools(t *testing.T) {
 		t.Fatalf("streamEvents: %v %+v", err, out)
 	}
 
-	s = testServer(t, 200, envelope(`{"deviceTotal":3,"deviceMax":10,"spaceTotal":2}`), rec)
+	s = testServer(t, 200, envelope(`{"deviceTotal":3,"deviceMax":10}`), rec)
 	if _, out, err := s.getUsage(ctx(), nil, GetUsageInput{}); err != nil || !out.OK {
 		t.Fatalf("getUsage: %v %+v", err, out)
 	}
