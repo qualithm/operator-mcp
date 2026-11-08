@@ -34,7 +34,6 @@ type IssueCertInput struct {
 type RotateCredentialInput struct {
 	DeviceID     string `json:"deviceId" jsonschema:"id of the device that owns the credential"`
 	CredentialID string `json:"credentialId" jsonschema:"id of the credential to rotate"`
-	Label        string `json:"label,omitempty" jsonschema:"human-readable label for the new credential"`
 	ExpiresAt    string `json:"expiresAt,omitempty" jsonschema:"optional expiry time in the future, RFC 3339"`
 	Revoke       bool   `json:"revoke,omitempty" jsonschema:"revoke the old credential immediately after rotating"`
 	DryRun       bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
@@ -126,8 +125,8 @@ func (s *Server) rotateCredential(ctx context.Context, _ *mcp.CallToolRequest, i
 	if err != nil {
 		return fail(err)
 	}
+	// The rotate endpoint takes only an expiry: the new credential keeps the old one's label.
 	cred, err := c.RotateCredential(ctx, in.DeviceID, in.CredentialID, operator.MintCredentialInput{
-		Label:     in.Label,
 		ExpiresAt: expiresAt,
 	}, in.Revoke)
 	if err != nil {
