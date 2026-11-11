@@ -127,6 +127,11 @@
     },
     {
       "method": "POST",
+      "path": "/billing/polar-webhook",
+      "noTool": "webhook"
+    },
+    {
+      "method": "POST",
       "path": "/billing/stripe-webhook",
       "noTool": "webhook"
     },
