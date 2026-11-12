@@ -125,8 +125,7 @@ func (s *Server) rotateCredential(ctx context.Context, _ *mcp.CallToolRequest, i
 	if err != nil {
 		return fail(err)
 	}
-	// The rotate endpoint takes only an expiry: the new credential keeps the old one's label.
-	cred, err := c.RotateCredential(ctx, in.DeviceID, in.CredentialID, operator.MintCredentialInput{
+	cred, err := c.RotateCredential(ctx, in.DeviceID, in.CredentialID, operator.RotateCredentialInput{
 		ExpiresAt: expiresAt,
 	}, in.Revoke)
 	if err != nil {
