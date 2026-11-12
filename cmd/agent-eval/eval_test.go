@@ -92,7 +92,14 @@ func TestRunHappyPath(t *testing.T) {
 		"create_enrollment": enrollmentOK,
 		// Read-back answers with the value the publisher recorded, as the real
 		// telemetry store would once the reading lands.
-		"get_telemetry": func(map[string]any) (any, error) {
+		"get_telemetry": func(args map[string]any) (any, error) {
+			// The tool takes RFC 3339 bounds; a number fails its input schema.
+			for _, k := range []string{"from", "to"} {
+				v, _ := args[k].(string)
+				if _, err := time.Parse(time.RFC3339, v); err != nil {
+					t.Errorf("get_telemetry %s = %#v, want an RFC 3339 string", k, args[k])
+				}
+			}
 			return []map[string]any{{"ts": 1, "value": publishedValue}}, nil
 		},
 		"delete_device": deleteOK,
