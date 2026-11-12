@@ -20,14 +20,14 @@ type httpProvisioner struct {
 	http    *http.Client
 }
 
-// claim implements provisioner: POST /provision/claim with the claim code.
+// claim implements provisioner: POST /v1/provision/claim with the claim code.
 func (p *httpProvisioner) claim(ctx context.Context, code, name string) (claimResult, error) {
 	body, err := json.Marshal(map[string]string{"code": code, "name": name})
 	if err != nil {
 		return claimResult{}, fmt.Errorf("encode claim body: %w", err)
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		strings.TrimRight(p.baseURL, "/")+"/provision/claim", bytes.NewReader(body))
+		strings.TrimRight(p.baseURL, "/")+"/v1/provision/claim", bytes.NewReader(body))
 	if err != nil {
 		return claimResult{}, fmt.Errorf("build claim request: %w", err)
 	}

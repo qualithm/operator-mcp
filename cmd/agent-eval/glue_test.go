@@ -54,7 +54,7 @@ func TestDecodeToolResult(t *testing.T) {
 
 func TestClaim(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/provision/claim" {
+		if r.URL.Path != "/v1/provision/claim" {
 			t.Errorf("path = %q", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")

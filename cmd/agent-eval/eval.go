@@ -259,8 +259,8 @@ func (r *evalRunner) run(ctx context.Context) {
 			err := r.tools.callTool(ctx, "get_telemetry", map[string]any{
 				"deviceId": cred.DeviceID,
 				"metric":   metric,
-				"from":     nowMS - 60_000,
-				"to":       time.Now().UnixMilli() + 60_000,
+				"from":     time.UnixMilli(nowMS - 60_000).UTC().Format(time.RFC3339),
+				"to":       time.Now().Add(time.Minute).UTC().Format(time.RFC3339),
 				"bucket":   60,
 			}, &out)
 			if err == nil {
