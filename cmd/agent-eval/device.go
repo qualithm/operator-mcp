@@ -61,7 +61,10 @@ func (p *httpProvisioner) claim(ctx context.Context, code, name string) (claimRe
 // the MQTT client id is the device ID, the secret is the password, the
 // capability manifest goes to the reserved `capabilities` topic, and telemetry
 // goes to the device-relative `telemetry` topic as {ts, metrics: {name: value}}.
-type mqttPublisher struct{}
+type mqttPublisher struct {
+	// newClient builds the MQTT client; nil means mqtt.NewClient.
+	newClient func(*mqtt.ClientOptions) mqtt.Client
+}
 
 // publishTelemetry implements publisher.
 func (p *mqttPublisher) publishTelemetry(ctx context.Context, cred claimResult, broker endpoint, metric string, value float64, ts int64) error {
@@ -72,7 +75,11 @@ func (p *mqttPublisher) publishTelemetry(ctx context.Context, cred claimResult, 
 		SetPassword(cred.Secret).
 		SetTLSConfig(&tls.Config{MinVersion: tls.VersionTLS13}).
 		SetConnectTimeout(15 * time.Second)
-	client := mqtt.NewClient(opts)
+	newClient := p.newClient
+	if newClient == nil {
+		newClient = mqtt.NewClient
+	}
+	client := newClient(opts)
 	token := client.Connect()
 	if !token.WaitTimeout(20 * time.Second) {
 		return fmt.Errorf("mqtt connect timed out")

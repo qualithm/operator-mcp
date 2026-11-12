@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -218,6 +219,60 @@ func TestPublishReadingNamesTheFailedPublish(t *testing.T) {
 	// A value JSON can't carry fails before the reading is published.
 	err = publishReading(refuse("telemetry"), "agent_eval", math.NaN(), 1)
 	if err == nil || !strings.HasPrefix(err.Error(), "encode telemetry:") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+// fakeToken is an MQTT token that has already completed, or never does.
+type fakeToken struct {
+	mqtt.Token
+	done bool
+	err  error
+}
+
+func (t fakeToken) WaitTimeout(time.Duration) bool { return t.done }
+func (t fakeToken) Error() error                   { return t.err }
+
+// fakeMQTT records what the eval publishes; publishes on stuck never complete.
+type fakeMQTT struct {
+	mqtt.Client
+	topics []string
+	stuck  string
+}
+
+func (c *fakeMQTT) Connect() mqtt.Token { return fakeToken{done: true} }
+func (c *fakeMQTT) Disconnect(uint)     {}
+func (c *fakeMQTT) Publish(topic string, qos byte, _ bool, _ any) mqtt.Token {
+	if qos != 1 {
+		return fakeToken{done: true, err: errors.New("want QoS 1")}
+	}
+	c.topics = append(c.topics, topic)
+	return fakeToken{done: topic != c.stuck}
+}
+
+func TestMQTTPublisherDeclaresThenPublishes(t *testing.T) {
+	client := &fakeMQTT{}
+	p := &mqttPublisher{newClient: func(*mqtt.ClientOptions) mqtt.Client { return client }}
+	cred := claimResult{DeviceID: "dev_1", Secret: "s"}
+	if err := p.publishTelemetry(context.Background(), cred, endpoint{Host: "broker", Port: 8883}, "agent_eval", 1, 1); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(client.topics, []string{"capabilities", "telemetry"}) {
+		t.Fatalf("topics = %v", client.topics)
+	}
+
+	// A publish the broker never acknowledges fails by name.
+	client = &fakeMQTT{stuck: "telemetry"}
+	err := p.publishTelemetry(context.Background(), cred, endpoint{Host: "broker", Port: 8883}, "agent_eval", 1, 1)
+	if err == nil || err.Error() != "publish telemetry: mqtt publish timed out" {
+		t.Fatalf("err = %v", err)
+	}
+
+	// A cancelled run reports the cancellation once the reading is out.
+	client = &fakeMQTT{}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := p.publishTelemetry(ctx, cred, endpoint{Host: "broker", Port: 8883}, "agent_eval", 1, 1); !errors.Is(err, context.Canceled) {
 		t.Fatalf("err = %v", err)
 	}
 }
