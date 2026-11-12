@@ -56,20 +56,17 @@ func (p *httpProvisioner) claim(ctx context.Context, code, name string) (claimRe
 	return env.Data, nil
 }
 
-// mqttPublisher connects a claimed device to the gateway over MQTT/TLS and
+// mqttPublisher connects a claimed device to its broker over MQTT/TLS and
 // publishes one telemetry reading. The wire contract matches the device SDK:
 // the MQTT client id is the device ID, the secret is the password, and
 // telemetry goes to the device-relative `telemetry` topic as
 // {ts, metrics: {name: value}}.
-type mqttPublisher struct {
-	host string
-	port int
-}
+type mqttPublisher struct{}
 
 // publishTelemetry implements publisher.
-func (p *mqttPublisher) publishTelemetry(ctx context.Context, cred claimResult, metric string, value float64, ts int64) error {
+func (p *mqttPublisher) publishTelemetry(ctx context.Context, cred claimResult, broker endpoint, metric string, value float64, ts int64) error {
 	opts := mqtt.NewClientOptions().
-		AddBroker(fmt.Sprintf("ssl://%s:%d", p.host, p.port)).
+		AddBroker(fmt.Sprintf("ssl://%s:%d", broker.Host, broker.Port)).
 		SetClientID(cred.DeviceID).
 		SetUsername(cred.DeviceID).
 		SetPassword(cred.Secret).
