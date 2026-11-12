@@ -8,7 +8,8 @@ import (
 
 const virtualDevice = `{"id":"dev_1","virtual":true,"parkedAt":"2026-10-28T00:00:00Z",` +
 	`"capabilitiesDeclared":true,"level":"development",` +
-	`"checks":[{"id":"credential-certificate","pass":false,"evidence":"a token credential"}]}`
+	`"checks":[{"id":"credential-certificate","pass":false,"evidence":"a token credential"}],` +
+	`"decisions":[{"key":"zone","label":"Zone","value":"eu","source":"scope","docsUrl":"https://docs.qualithm.com/zones"}]}`
 
 // TestDeviceToolsReturnEveryField proves an agent sees what the device API
 // serves, not only the fields the tools happen to name.
@@ -20,6 +21,7 @@ func TestDeviceToolsReturnEveryField(t *testing.T) {
 		`"capabilitiesDeclared":true`,
 		`"level":"development"`,
 		`"evidence":"a token credential"`,
+		`"decisions":[{"key":"zone","label":"Zone","value":"eu","source":"scope","docsUrl":"https://docs.qualithm.com/zones"}]`,
 	}
 	tests := []struct {
 		name string
