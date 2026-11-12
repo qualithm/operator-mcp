@@ -452,31 +452,6 @@
     },
     {
       "method": "GET",
-      "path": "/v1/teams/:teamId/spaces",
-      "issue": 2611
-    },
-    {
-      "method": "POST",
-      "path": "/v1/teams/:teamId/spaces",
-      "issue": 2611
-    },
-    {
-      "method": "DELETE",
-      "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "issue": 2611
-    },
-    {
-      "method": "GET",
-      "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "issue": 2611
-    },
-    {
-      "method": "PATCH",
-      "path": "/v1/teams/:teamId/spaces/:spaceId",
-      "issue": 2611
-    },
-    {
-      "method": "GET",
       "path": "/v1/teams",
       "tool": "list_teams"
     },
