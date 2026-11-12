@@ -4,11 +4,11 @@
 [![codecov](https://codecov.io/gh/qualithm/operator-mcp/graph/badge.svg)](https://codecov.io/gh/qualithm/operator-mcp)
 [![Go Reference](https://pkg.go.dev/badge/github.com/qualithm/operator-mcp.svg)](https://pkg.go.dev/github.com/qualithm/operator-mcp)
 
-Go MCP server for agent-native provisioning of the Qualithm platform. It exposes the platform
+Go MCP server for managing teams, scopes and devices on Qualithm. It exposes the platform
 management API — teams, members, scopes, devices, credentials, enrollments, authorities, API tokens,
 automations, dashboards, observability, and read-only workspace and billing state — as MCP tools
-over stdio, backed by the same `operator` client that powers the `qualithm` CLI, so the human and
-agent surfaces never diverge.
+over stdio, backed by the same `operator` client as the `qualithm` CLI, so both return the same
+results.
 
 ## Features
 
