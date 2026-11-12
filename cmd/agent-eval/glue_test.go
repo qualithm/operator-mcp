@@ -58,7 +58,7 @@ func TestClaim(t *testing.T) {
 			t.Errorf("path = %q", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"data":{"deviceId":"dev_1","secret":"s3cr3t"}}`))
+		_, _ = w.Write([]byte(`{"data":{"deviceId":"dev_1","secret":"s3cr3t","broker":{"host":"gw.example","port":8883}}}`))
 	}))
 	defer srv.Close()
 
@@ -67,7 +67,7 @@ func TestClaim(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cred.DeviceID != "dev_1" || cred.Secret != "s3cr3t" {
+	if cred.DeviceID != "dev_1" || cred.Secret != "s3cr3t" || cred.Broker != (endpoint{Host: "gw.example", Port: 8883}) {
 		t.Fatalf("cred = %+v", cred)
 	}
 }
@@ -104,8 +104,8 @@ func TestClaimFailures(t *testing.T) {
 
 func TestPublishTelemetryConnectFailure(t *testing.T) {
 	// Nothing listens on the port: the connect fails fast and is reported.
-	p := &mqttPublisher{host: "127.0.0.1", port: 1}
-	err := p.publishTelemetry(context.Background(), claimResult{DeviceID: "dev_1", Secret: "s"}, "agent_eval", 1, 1)
+	p := &mqttPublisher{}
+	err := p.publishTelemetry(context.Background(), claimResult{DeviceID: "dev_1", Secret: "s"}, endpoint{Host: "127.0.0.1", Port: 1}, "agent_eval", 1, 1)
 	if err == nil {
 		t.Fatal("want connect error")
 	}

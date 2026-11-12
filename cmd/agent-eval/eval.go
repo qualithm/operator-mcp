@@ -47,8 +47,20 @@ type toolCaller interface {
 // claimResult is the provisioning API's claim response: the device identity
 // and its first credential secret.
 type claimResult struct {
-	DeviceID string `json:"deviceId"`
-	Secret   string `json:"secret"`
+	DeviceID string   `json:"deviceId"`
+	Secret   string   `json:"secret"`
+	Broker   endpoint `json:"broker"`
+}
+
+// defaultBrokerPort is the gateway's MQTT/TLS port, for a broker that names
+// none.
+const defaultBrokerPort = 8883
+
+// endpoint is where a device connects: the MQTT gateway the claim response
+// names.
+type endpoint struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
 }
 
 // provisioner exchanges a claim code for a device credential.
@@ -58,7 +70,7 @@ type provisioner interface {
 
 // publisher connects a device and publishes one telemetry reading.
 type publisher interface {
-	publishTelemetry(ctx context.Context, cred claimResult, metric string, value float64, ts int64) error
+	publishTelemetry(ctx context.Context, cred claimResult, broker endpoint, metric string, value float64, ts int64) error
 }
 
 // Config carries everything the eval needs that the product surfaces do not
@@ -71,6 +83,9 @@ type Config struct {
 	VerifyTimeout time.Duration
 	// PollInterval is the delay between read-back attempts.
 	PollInterval time.Duration
+	// Broker overrides the claim response's broker: a non-empty Host replaces
+	// its host and a non-zero Port its port.
+	Broker endpoint
 }
 
 type evalRunner struct {
@@ -120,6 +135,29 @@ func (r *evalRunner) step(name string, fn func() (string, error)) error {
 		r.report.Steps[len(r.report.Steps)-1] = s
 	}
 	return err
+}
+
+// broker picks where the device connects: the claim response's broker, with
+// the configured override on top. A response without one is friction when
+// the override fills the gap, and an error when nothing does.
+func (r *evalRunner) broker(cred claimResult) (endpoint, error) {
+	broker := cred.Broker
+	if broker.Host == "" {
+		if r.cfg.Broker.Host == "" {
+			return endpoint{}, errors.New("claim response names no broker; pass -broker-host")
+		}
+		r.friction("connect", "claim response names no broker; the eval's broker comes from -broker-host")
+	}
+	if r.cfg.Broker.Host != "" {
+		broker.Host = r.cfg.Broker.Host
+	}
+	if r.cfg.Broker.Port != 0 {
+		broker.Port = r.cfg.Broker.Port
+	}
+	if broker.Port == 0 {
+		broker.Port = defaultBrokerPort
+	}
+	return broker, nil
 }
 
 // friction records a surface gap the harness had to compensate for.
@@ -236,14 +274,15 @@ func (r *evalRunner) run(ctx context.Context) {
 		return
 	}
 
-	// The claim response identifies the device but not where it connects.
-	r.friction("connect", "claim response omits the broker host; the eval's broker comes from configuration")
-
 	if err := r.step("connect_publish", func() (string, error) {
-		if err := r.publish.publishTelemetry(ctx, cred, metric, value, nowMS); err != nil {
+		broker, err := r.broker(cred)
+		if err != nil {
 			return "", err
 		}
-		return fmt.Sprintf("published %s=%v", metric, value), nil
+		if err := r.publish.publishTelemetry(ctx, cred, broker, metric, value, nowMS); err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("published %s=%v to %s:%d", metric, value, broker.Host, broker.Port), nil
 	}); err != nil {
 		r.deleteDevice(ctx, cred.DeviceID)
 		return

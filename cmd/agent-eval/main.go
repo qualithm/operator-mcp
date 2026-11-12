@@ -32,8 +32,8 @@ func runMain() int {
 	fs := flag.NewFlagSet("agent-eval", flag.ContinueOnError)
 	fs.StringVar(&serverBin, "server-bin", os.Getenv("AGENT_EVAL_SERVER_BIN"), "path to the qualithm-mcp binary")
 	fs.StringVar(&apiURL, "api-url", envOr("QUALITHM_API_URL", "https://api.sandbox.qualithm.com"), "management API base URL")
-	fs.StringVar(&brokerHost, "broker-host", envOr("AGENT_EVAL_BROKER_HOST", "gw.sandbox-sg-sin-a.qualithm.com"), "device gateway host")
-	fs.IntVar(&brokerPort, "broker-port", 8883, "device gateway TLS port")
+	fs.StringVar(&brokerHost, "broker-host", os.Getenv("AGENT_EVAL_BROKER_HOST"), "override the broker host the claim response names")
+	fs.IntVar(&brokerPort, "broker-port", 0, "override the broker TLS port the claim response names")
 	fs.StringVar(&token, "token", os.Getenv("QUALITHM_API_TOKEN"), "member API token for the eval team")
 	fs.StringVar(&zone, "zone", os.Getenv("AGENT_EVAL_ZONE"), "device zone for the eval scope when the team has none")
 	fs.StringVar(&outPath, "out", "", "write the JSON report here (default: stdout only)")
@@ -62,8 +62,8 @@ func runMain() int {
 
 	report := Run(ctx, tools,
 		&httpProvisioner{baseURL: apiURL, http: &http.Client{Timeout: 30 * time.Second}},
-		&mqttPublisher{host: brokerHost, port: brokerPort},
-		Config{Zone: zone},
+		&mqttPublisher{},
+		Config{Zone: zone, Broker: endpoint{Host: brokerHost, Port: brokerPort}},
 	)
 
 	fmt.Print(report.Render())
