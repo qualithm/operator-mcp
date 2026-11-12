@@ -58,9 +58,9 @@ func (p *httpProvisioner) claim(ctx context.Context, code, name string) (claimRe
 
 // mqttPublisher connects a claimed device to its broker over MQTT/TLS and
 // publishes one telemetry reading. The wire contract matches the device SDK:
-// the MQTT client id is the device ID, the secret is the password, and
-// telemetry goes to the device-relative `telemetry` topic as
-// {ts, metrics: {name: value}}.
+// the MQTT client id is the device ID, the secret is the password, the
+// capability manifest goes to the reserved `capabilities` topic, and telemetry
+// goes to the device-relative `telemetry` topic as {ts, metrics: {name: value}}.
 type mqttPublisher struct{}
 
 // publishTelemetry implements publisher.
@@ -82,24 +82,59 @@ func (p *mqttPublisher) publishTelemetry(ctx context.Context, cred claimResult, 
 		return fmt.Errorf("mqtt connect: %w", err)
 	}
 
-	payload, err := json.Marshal(map[string]any{
-		"ts":      ts,
-		"metrics": map[string]float64{metric: value},
-	})
-	if err != nil {
-		return fmt.Errorf("encode telemetry: %w", err)
-	}
-	pub := client.Publish("telemetry", 1, false, payload)
-	if !pub.WaitTimeout(15 * time.Second) {
-		return fmt.Errorf("mqtt publish timed out")
-	}
-	if err := pub.Error(); err != nil {
-		return fmt.Errorf("mqtt publish: %w", err)
+	if err := publishReading(func(topic string, payload []byte) error {
+		pub := client.Publish(topic, 1, false, payload)
+		if !pub.WaitTimeout(15 * time.Second) {
+			return fmt.Errorf("mqtt publish timed out")
+		}
+		return pub.Error()
+	}, metric, value, ts); err != nil {
+		return err
 	}
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
 		return nil
+	}
+}
+
+// qos1Publish publishes one payload on a device topic at QoS 1 and returns
+// once the broker has acknowledged it.
+type qos1Publish func(topic string, payload []byte) error
+
+// publishReading declares the eval's metric as a sensor capability, then
+// publishes the reading. A gateway that enforces manifests refuses a
+// session's readings until its manifest arrives, so the order matters.
+func publishReading(publish qos1Publish, metric string, value float64, ts int64) error {
+	manifest, err := json.Marshal(capabilityManifest(metric))
+	if err != nil {
+		return fmt.Errorf("encode capability manifest: %w", err)
+	}
+	if err := publish("capabilities", manifest); err != nil {
+		return fmt.Errorf("declare capabilities: %w", err)
+	}
+	reading, err := json.Marshal(map[string]any{
+		"ts":      ts,
+		"metrics": map[string]float64{metric: value},
+	})
+	if err != nil {
+		return fmt.Errorf("encode telemetry: %w", err)
+	}
+	if err := publish("telemetry", reading); err != nil {
+		return fmt.Errorf("publish telemetry: %w", err)
+	}
+	return nil
+}
+
+// capabilityManifest is the manifest the device SDKs build for one sensor
+// that reports a telemetry metric: {capabilities: [{key, type, config}]}.
+func capabilityManifest(metric string) map[string]any {
+	return map[string]any{
+		"capabilities": []map[string]any{{
+			"key":    metric,
+			"type":   "sensor",
+			"config": map[string]string{"metric": metric},
+		}},
 	}
 }
