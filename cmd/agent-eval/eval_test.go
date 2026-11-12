@@ -64,18 +64,21 @@ type fakePublisher struct {
 	err error
 }
 
-func (f fakePublisher) publishTelemetry(context.Context, claimResult, string, float64, int64) error {
+func (f fakePublisher) publishTelemetry(context.Context, claimResult, endpoint, string, float64, int64) error {
 	return f.err
 }
 
 // recordingPublisher captures the value the eval publishes so the fake
-// telemetry read can answer with it, as the real store would.
+// telemetry read can answer with it, as the real store would, and the broker
+// it connected to.
 type recordingPublisher struct {
-	sink *float64
+	sink   *float64
+	broker endpoint
 }
 
-func (p *recordingPublisher) publishTelemetry(_ context.Context, _ claimResult, _ string, value float64, _ int64) error {
+func (p *recordingPublisher) publishTelemetry(_ context.Context, _ claimResult, broker endpoint, _ string, value float64, _ int64) error {
 	*p.sink = value
+	p.broker = broker
 	return nil
 }
 
@@ -108,7 +111,7 @@ func TestRunHappyPath(t *testing.T) {
 		},
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		&recordingPublisher{sink: &publishedValue},
 		Config{Zone: "sandbox"},
 	)
@@ -124,9 +127,56 @@ func TestRunHappyPath(t *testing.T) {
 			t.Errorf("step %d = %+v", i, report.Steps[i])
 		}
 	}
-	// The broker-host gap is always friction on the happy path.
-	if len(report.Friction) != 1 || report.Friction[0].Step != "connect" {
+	// The claim response names the broker, so nothing is friction.
+	if len(report.Friction) != 0 {
 		t.Fatalf("friction = %+v", report.Friction)
+	}
+}
+
+func TestRunBroker(t *testing.T) {
+	named := endpoint{Host: "gw.example", Port: 8883}
+	cases := []struct {
+		name     string
+		claimed  endpoint
+		override endpoint
+		want     endpoint
+		friction int
+		fail     string
+	}{
+		{name: "the claim response's broker", claimed: named, want: named},
+		{name: "an override on top", claimed: named, override: endpoint{Host: "gw.local", Port: 1883}, want: endpoint{Host: "gw.local", Port: 1883}},
+		{name: "a port-only override", claimed: named, override: endpoint{Port: 1883}, want: endpoint{Host: "gw.example", Port: 1883}},
+		{name: "no broker, filled by the override", override: endpoint{Host: "gw.local"}, want: endpoint{Host: "gw.local", Port: 8883}, friction: 1},
+		{name: "no broker and no override", fail: "claim response names no broker; pass -broker-host"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var publishedValue float64
+			tools := &fakeTools{responses: map[string]toolFunc{
+				"list_scopes":       scopesWithOne,
+				"create_enrollment": enrollmentOK,
+				"get_telemetry": func(map[string]any) (any, error) {
+					return []map[string]any{{"ts": 1, "value": publishedValue}}, nil
+				},
+				"delete_device": deleteOK,
+			}}
+			pub := &recordingPublisher{sink: &publishedValue}
+			report := Run(context.Background(), tools,
+				fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: c.claimed}},
+				pub,
+				Config{Zone: "sandbox", Broker: c.override},
+			)
+			if c.fail != "" {
+				last := report.Steps[len(report.Steps)-1]
+				if report.OK || last.Name != "connect_publish" || last.Detail != c.fail {
+					t.Fatalf("report = %+v", report)
+				}
+				return
+			}
+			if !report.OK || pub.broker != c.want || len(report.Friction) != c.friction {
+				t.Fatalf("broker = %+v, report = %+v", pub.broker, report)
+			}
+		})
 	}
 }
 
@@ -152,7 +202,7 @@ func TestRunCreatesScopeWhenNone(t *testing.T) {
 		"delete_device": deleteOK,
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		&recordingPublisher{sink: &publishedValue},
 		Config{Zone: "sandbox"},
 	)
@@ -193,7 +243,7 @@ func TestRunCreatesScopeInAnOpenZone(t *testing.T) {
 		"delete_device": deleteOK,
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		&recordingPublisher{sink: &publishedValue},
 		Config{},
 	)
@@ -203,13 +253,9 @@ func TestRunCreatesScopeInAnOpenZone(t *testing.T) {
 	if report.Steps[1].Name != "list_zones" || report.Steps[2].Name != "create_scope" {
 		t.Fatalf("steps = %+v", report.Steps)
 	}
-	// Only the broker host still comes from configuration.
-	steps := make([]string, 0, len(report.Friction))
-	for _, f := range report.Friction {
-		steps = append(steps, f.Step)
-	}
-	if fmt.Sprint(steps) != "[connect]" {
-		t.Fatalf("friction steps = %v", steps)
+	// The zone and the broker both come from the surfaces: nothing is friction.
+	if len(report.Friction) != 0 {
+		t.Fatalf("friction = %+v", report.Friction)
 	}
 }
 
@@ -225,7 +271,7 @@ func TestRunStopsWithoutAnOpenZone(t *testing.T) {
 				"list_zones":  listZones,
 			}}
 			report := Run(context.Background(), tools,
-				fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+				fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 				fakePublisher{},
 				Config{},
 			)
@@ -269,7 +315,7 @@ func TestRunPublishFailureDeletesDevice(t *testing.T) {
 		"delete_device":     deleteOK,
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		fakePublisher{err: errors.New("mqtt connect: timeout")},
 		Config{Zone: "sandbox"},
 	)
@@ -293,7 +339,7 @@ func TestRunVerifyTimesOut(t *testing.T) {
 		"delete_device": deleteOK,
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		fakePublisher{},
 		Config{Zone: "sandbox", VerifyTimeout: 30 * time.Millisecond, PollInterval: 5 * time.Millisecond},
 	)
@@ -311,7 +357,7 @@ func TestRunToolFailureStopsEarly(t *testing.T) {
 		"list_scopes": failWith(errors.New("list_scopes: auth: bad token")),
 	}}
 	report := Run(context.Background(), tools,
-		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s"}},
+		fakeProvisioner{result: claimResult{DeviceID: "dev_1", Secret: "s", Broker: endpoint{Host: "gw.example", Port: 8883}}},
 		fakePublisher{},
 		Config{Zone: "sandbox"},
 	)
