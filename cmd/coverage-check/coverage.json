@@ -559,6 +559,31 @@
       "method": "GET",
       "path": "/v1/zones",
       "tool": "list_zones"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/oauth-authorization-server",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/oauth-protected-resource",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "POST",
+      "path": "/oauth/revoke",
+      "noTool": "auth-flow"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/account/oauth/authorization",
+      "noTool": "human-only"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/account/oauth/authorization",
+      "noTool": "human-only"
     }
   ]
 }
