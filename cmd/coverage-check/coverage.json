@@ -136,6 +136,11 @@
       "noTool": "webhook"
     },
     {
+      "method": "PATCH",
+      "path": "/v1/teams/:teamId/billing/subscription",
+      "noTool": "human-only"
+    },
+    {
       "method": "GET",
       "path": "/v1/teams/:teamId/billing/summary",
       "tool": "get_billing_summary"
