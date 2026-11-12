@@ -57,7 +57,7 @@ func (s *Server) registerCredentials(srv *mcp.Server) {
 	}, s.mintCredential, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "issue_cert",
-		Description: "Issue an mTLS certificate credential for a device from a CSR. The certificate is returned once.",
+		Description: "Issue a mutual TLS (mTLS) certificate credential for a device from a certificate signing request (CSR). The certificate is returned once.",
 	}, s.issueCert, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "rotate_credential",

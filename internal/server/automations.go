@@ -92,7 +92,7 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 	}, s.listAutomations, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_automation",
-		Description: "Create an automation from a full trigger+chain payload, or from a catalogue template with slot values.",
+		Description: "Create an automation from a full trigger and chain payload, or from a catalogue template with slot values.",
 	}, s.createAutomation, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_automation",
