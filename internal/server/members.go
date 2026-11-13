@@ -15,7 +15,7 @@ type ListTeamMembersInput struct {
 	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
-// AddTeamMemberInput activates the caller's own invitation to a team.
+// AddTeamMemberInput accepts an invite addressed to the caller's email.
 type AddTeamMemberInput struct {
 	TeamID   string `json:"teamId" jsonschema:"id of the team the invite belongs to"`
 	InviteID string `json:"inviteId" jsonschema:"id of the invite being accepted"`
@@ -50,19 +50,37 @@ type ListTeamInvitesInput struct {
 	Limit  int    `json:"limit,omitempty" jsonschema:"page size; 0 uses the server default"`
 }
 
-// CreateTeamInviteInput invites an account to a team by email.
+// CreateTeamInviteInput invites email addresses to a team.
 type CreateTeamInviteInput struct {
-	TeamID string `json:"teamId" jsonschema:"id of the team to invite into"`
-	Email  string `json:"email" jsonschema:"email address of the account to invite"`
-	Role   string `json:"role" jsonschema:"role the invite grants: owner, manager, or viewer"`
-	DryRun bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
+	TeamID string   `json:"teamId" jsonschema:"id of the team to invite into"`
+	Emails []string `json:"emails" jsonschema:"addresses to invite, with or without an account; up to 20"`
+	Role   string   `json:"role" jsonschema:"role every invite grants: owner, manager, or viewer"`
+	DryRun bool     `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
-// RevokeTeamInviteInput revokes a pending invitation.
+// ResendTeamInviteInput mails a pending invite again with a new link.
+type ResendTeamInviteInput struct {
+	TeamID   string `json:"teamId" jsonschema:"id of the team"`
+	InviteID string `json:"inviteId" jsonschema:"id of the invite to resend"`
+	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
+}
+
+// RevokeTeamInviteInput withdraws a pending invite.
 type RevokeTeamInviteInput struct {
 	TeamID   string `json:"teamId" jsonschema:"id of the team"`
-	InviteID string `json:"inviteId" jsonschema:"id of the invite to revoke"`
+	InviteID string `json:"inviteId" jsonschema:"id of the invite to withdraw"`
 	DryRun   bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
+}
+
+// LookupInviteInput reads the invite a link token names.
+type LookupInviteInput struct {
+	Token string `json:"token" jsonschema:"the token from the invite link, the part after /invites/"`
+}
+
+// AcceptInviteInput accepts the invite a link token names.
+type AcceptInviteInput struct {
+	Token  string `json:"token" jsonschema:"the token from the invite link, the part after /invites/"`
+	DryRun bool   `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
 func (s *Server) registerMembers(srv *mcp.Server) {
@@ -72,7 +90,7 @@ func (s *Server) registerMembers(srv *mcp.Server) {
 	}, s.listTeamMembers, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "add_team_member",
-		Description: "Accept the caller's invitation to a team, activating their membership.",
+		Description: "Accept an invite by id. Only the account whose email the invite names can accept it.",
 	}, s.addTeamMember, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_team_member",
@@ -88,16 +106,28 @@ func (s *Server) registerMembers(srv *mcp.Server) {
 	}, s.removeTeamMember, true)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "list_team_invites",
-		Description: "List pending invitations to a team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
+		Description: "List pending invites to a team. Pass the result's nextCursor back as cursor for the next page; it is null on the last page.",
 	}, s.listTeamInvites, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_team_invite",
-		Description: "Invite an account to a team by email.",
+		Description: "Invite email addresses to a team with one role. Each address gets a result: sent, already_member, or already_invited (resend that one instead). Each link expires after 7 days, and the team can send a limited number of invite emails per hour.",
 	}, s.createTeamInvite, true)
 	addTool(s, srv, &mcp.Tool{
+		Name:        "resend_team_invite",
+		Description: "Mail a pending invite again with a new link that expires after 7 days; the old link stops working.",
+	}, s.resendTeamInvite, true)
+	addTool(s, srv, &mcp.Tool{
 		Name:        "revoke_team_invite",
-		Description: "Revoke a pending team invitation.",
+		Description: "Withdraw a pending team invite; its link stops working.",
 	}, s.revokeTeamInvite, true)
+	addTool(s, srv, &mcp.Tool{
+		Name:        "lookup_invite",
+		Description: "Read the invite an invite link names: the team, role, inviter and expiry, and forCaller, whether the signed-in account may accept it.",
+	}, s.lookupInvite, false)
+	addTool(s, srv, &mcp.Tool{
+		Name:        "accept_invite",
+		Description: "Accept the invite an invite link names, joining its team. Only the account whose email the invite names can accept it.",
+	}, s.acceptInvite, true)
 }
 
 func (s *Server) listTeamMembers(ctx context.Context, _ *mcp.CallToolRequest, in ListTeamMembersInput) (*mcp.CallToolResult, Result, error) {
@@ -175,11 +205,23 @@ func (s *Server) createTeamInvite(ctx context.Context, _ *mcp.CallToolRequest, i
 	if err != nil {
 		return fail(err)
 	}
-	m, err := c.CreateTeamInvite(ctx, in.TeamID, operator.CreateTeamInviteInput{Email: in.Email, Role: in.Role})
+	res, err := c.CreateTeamInvite(ctx, in.TeamID, operator.CreateTeamInviteInput{Emails: in.Emails, Role: in.Role})
 	if err != nil {
 		return fail(err)
 	}
-	return ok(m)
+	return ok(res)
+}
+
+func (s *Server) resendTeamInvite(ctx context.Context, _ *mcp.CallToolRequest, in ResendTeamInviteInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(in.DryRun)
+	if err != nil {
+		return fail(err)
+	}
+	inv, err := c.ResendTeamInvite(ctx, in.TeamID, in.InviteID)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(inv)
 }
 
 func (s *Server) revokeTeamInvite(ctx context.Context, _ *mcp.CallToolRequest, in RevokeTeamInviteInput) (*mcp.CallToolResult, Result, error) {
@@ -191,4 +233,28 @@ func (s *Server) revokeTeamInvite(ctx context.Context, _ *mcp.CallToolRequest, i
 		return fail(err)
 	}
 	return ok(nil)
+}
+
+func (s *Server) lookupInvite(ctx context.Context, _ *mcp.CallToolRequest, in LookupInviteInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(false)
+	if err != nil {
+		return fail(err)
+	}
+	link, err := c.LookupInvite(ctx, in.Token)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(link)
+}
+
+func (s *Server) acceptInvite(ctx context.Context, _ *mcp.CallToolRequest, in AcceptInviteInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(in.DryRun)
+	if err != nil {
+		return fail(err)
+	}
+	m, err := c.AcceptInvite(ctx, in.Token)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(m)
 }
