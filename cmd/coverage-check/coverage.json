@@ -338,12 +338,12 @@
     {
       "method": "POST",
       "path": "/v1/invites/accept",
-      "issue": 3809
+      "tool": "accept_invite"
     },
     {
       "method": "POST",
       "path": "/v1/invites/lookup",
-      "issue": 3809
+      "tool": "lookup_invite"
     },
     {
       "method": "GET",
@@ -513,7 +513,7 @@
     {
       "method": "POST",
       "path": "/v1/teams/:teamId/invites/:inviteId/resend",
-      "issue": 3809
+      "tool": "resend_team_invite"
     },
     {
       "method": "GET",

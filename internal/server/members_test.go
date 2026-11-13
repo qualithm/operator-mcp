@@ -17,10 +17,10 @@ func TestMembersTools(t *testing.T) {
 	}
 
 	s = testServer(t, 201, envelope(`{"id":"mem_2","status":"active"}`), rec)
-	if _, out, err := s.addTeamMember(ctx(), nil, AddTeamMemberInput{TeamID: "team_1", InviteID: "inv_9"}); err != nil || !out.OK {
+	if _, out, err := s.addTeamMember(ctx(), nil, AddTeamMemberInput{TeamID: "team_1", InviteID: "ivt_9"}); err != nil || !out.OK {
 		t.Fatalf("addTeamMember: %v %+v", err, out)
 	}
-	if rec.method != http.MethodPost || !strings.Contains(rec.body, `"inviteId":"inv_9"`) {
+	if rec.method != http.MethodPost || !strings.Contains(rec.body, `"inviteId":"ivt_9"`) {
 		t.Fatalf("request %s body=%q", rec.method, rec.body)
 	}
 
@@ -48,7 +48,7 @@ func TestMembersTools(t *testing.T) {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 
-	s = testServer(t, 200, envelope(`{"current":1,"items":[{"id":"mem_3","status":"invited"}],"last":1}`), rec)
+	s = testServer(t, 200, envelope(`{"current":1,"items":[{"id":"ivt_3","email":"a@b.c"}],"last":1}`), rec)
 	if _, out, err := s.listTeamInvites(ctx(), nil, ListTeamInvitesInput{TeamID: "team_1"}); err != nil || !out.OK {
 		t.Fatalf("listTeamInvites: %v %+v", err, out)
 	}
@@ -56,19 +56,43 @@ func TestMembersTools(t *testing.T) {
 		t.Fatalf("path %q", rec.path)
 	}
 
-	s = testServer(t, 201, envelope(`{"id":"mem_4","status":"invited"}`), rec)
-	if _, out, err := s.createTeamInvite(ctx(), nil, CreateTeamInviteInput{TeamID: "team_1", Email: "a@b.c", Role: "viewer"}); err != nil || !out.OK {
+	s = testServer(t, 200, envelope(`{"items":[{"email":"a@b.c","result":"sent","invite":{"id":"ivt_4"}}]}`), rec)
+	if _, out, err := s.createTeamInvite(ctx(), nil, CreateTeamInviteInput{TeamID: "team_1", Emails: []string{"a@b.c", "d@e.f"}, Role: "viewer"}); err != nil || !out.OK {
 		t.Fatalf("createTeamInvite: %v %+v", err, out)
 	}
-	if !strings.Contains(rec.body, `"email":"a@b.c"`) || !strings.Contains(rec.body, `"role":"viewer"`) {
+	if !strings.Contains(rec.body, `"emails":["a@b.c","d@e.f"]`) || !strings.Contains(rec.body, `"role":"viewer"`) {
 		t.Fatalf("body=%q", rec.body)
 	}
 
+	s = testServer(t, 200, envelope(`{"id":"ivt_4"}`), rec)
+	if _, out, err := s.resendTeamInvite(ctx(), nil, ResendTeamInviteInput{TeamID: "team_1", InviteID: "ivt_4"}); err != nil || !out.OK {
+		t.Fatalf("resendTeamInvite: %v %+v", err, out)
+	}
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/invites/ivt_4/resend" {
+		t.Fatalf("request %s %s", rec.method, rec.path)
+	}
+
+	s = testServer(t, 200, envelope(`{"invite":{"id":"ivt_5"},"forCaller":true}`), rec)
+	if _, out, err := s.lookupInvite(ctx(), nil, LookupInviteInput{Token: "qmi_abc"}); err != nil || !out.OK {
+		t.Fatalf("lookupInvite: %v %+v", err, out)
+	}
+	if rec.path != "/v1/invites/lookup" || !strings.Contains(rec.body, `"token":"qmi_abc"`) {
+		t.Fatalf("request %s body=%q", rec.path, rec.body)
+	}
+
+	s = testServer(t, 201, envelope(`{"id":"mem_6","status":"active"}`), rec)
+	if _, out, err := s.acceptInvite(ctx(), nil, AcceptInviteInput{Token: "qmi_abc"}); err != nil || !out.OK {
+		t.Fatalf("acceptInvite: %v %+v", err, out)
+	}
+	if rec.method != http.MethodPost || rec.path != "/v1/invites/accept" || !strings.Contains(rec.body, `"token":"qmi_abc"`) {
+		t.Fatalf("request %s %s body=%q", rec.method, rec.path, rec.body)
+	}
+
 	s = testServer(t, 200, `{"message":"ok"}`, rec)
-	if _, out, _ := s.revokeTeamInvite(ctx(), nil, RevokeTeamInviteInput{TeamID: "team_1", InviteID: "mem_4"}); !out.OK {
+	if _, out, _ := s.revokeTeamInvite(ctx(), nil, RevokeTeamInviteInput{TeamID: "team_1", InviteID: "ivt_4"}); !out.OK {
 		t.Fatal("revokeTeamInvite not ok")
 	}
-	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/invites/mem_4" {
+	if rec.method != http.MethodDelete || rec.path != "/v1/teams/team_1/invites/ivt_4" {
 		t.Fatalf("request %s %s", rec.method, rec.path)
 	}
 }
