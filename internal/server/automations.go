@@ -78,6 +78,22 @@ type TriggerAutomationInput struct {
 	DryRun  bool            `json:"dryRun,omitempty" jsonschema:"plan the mutation without applying it"`
 }
 
+// TestAutomationInput tests an automation without running it: a saved one by
+// automationId, or a draft (a payload or a template with params, as
+// create_automation takes them). A test needs deviceId or sample unless the
+// trigger names its device.
+type TestAutomationInput struct {
+	AutomationID string          `json:"automationId,omitempty" jsonschema:"id of the saved automation to test; omit to test a draft"`
+	Name         string          `json:"name,omitempty" jsonschema:"draft only: automation name"`
+	ScopeID      string          `json:"scopeId,omitempty" jsonschema:"draft only: id of the scope to limit it to; omit for team-wide"`
+	Payload      json.RawMessage `json:"payload,omitempty" jsonschema:"draft only: trigger plus ordered condition/action chain; exclusive with template"`
+	Template     string          `json:"template,omitempty" jsonschema:"draft only: id of the catalogue template to expand; exclusive with payload"`
+	Params       json.RawMessage `json:"params,omitempty" jsonschema:"draft only: template slot values, used with template"`
+	DeviceID     string          `json:"deviceId,omitempty" jsonschema:"device whose latest reading the test evaluates; the trigger's own device when absent"`
+	Sample       json.RawMessage `json:"sample,omitempty" jsonschema:"a reading to test against instead of the device's latest: {metrics, topic, state}"`
+	Notify       bool            `json:"notify,omitempty" jsonschema:"also send you alone a test notification, marked as a test, when one would fire"`
+}
+
 // CreateAutomationTriggerSecretInput issues a webhook trigger secret for an
 // automation.
 type CreateAutomationTriggerSecretInput struct {
@@ -122,6 +138,10 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 		Name:        "trigger_automation",
 		Description: "Fire an automation's webhook trigger, authenticated by its trigger secret.",
 	}, s.triggerAutomation, true)
+	addTool(s, srv, &mcp.Tool{
+		Name:        "test_automation",
+		Description: "Test a saved automation, or a draft before saving it, against a device's latest reading or a sample. Returns whether it would fire, why not, the values compared and the actions it would take. Nothing runs, is recorded or is counted.",
+	}, s.testAutomation, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "create_automation_trigger_secret",
 		Description: "Issue a webhook trigger secret for an automation. The URL and secret are returned once.",
@@ -305,4 +325,47 @@ func (s *Server) createAutomationTriggerSecret(ctx context.Context, _ *mcp.CallT
 		return fail(err)
 	}
 	return ok(issued)
+}
+
+func (s *Server) testAutomation(ctx context.Context, _ *mcp.CallToolRequest, in TestAutomationInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(false)
+	if err != nil {
+		return fail(err)
+	}
+	opts := operator.AutomationTestOptions{DeviceID: in.DeviceID, Notify: in.Notify}
+	if len(in.Sample) > 0 {
+		var sample operator.AutomationTestSample
+		if err := json.Unmarshal(in.Sample, &sample); err != nil {
+			return fail(err)
+		}
+		opts.Sample = &sample
+	}
+	if in.AutomationID != "" {
+		t, err := c.TestAutomation(ctx, in.AutomationID, opts)
+		if err != nil {
+			return fail(err)
+		}
+		return ok(t)
+	}
+	draft := operator.TestDraftAutomationInput{Name: in.Name, Template: in.Template, AutomationTestOptions: opts}
+	if in.ScopeID != "" {
+		draft.ScopeID = &in.ScopeID
+	}
+	if len(in.Payload) > 0 {
+		var payload operator.AutomationPayload
+		if err := json.Unmarshal(in.Payload, &payload); err != nil {
+			return fail(err)
+		}
+		draft.Payload = &payload
+	}
+	if len(in.Params) > 0 {
+		if err := json.Unmarshal(in.Params, &draft.Params); err != nil {
+			return fail(err)
+		}
+	}
+	t, err := c.TestDraftAutomation(ctx, draft)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(t)
 }

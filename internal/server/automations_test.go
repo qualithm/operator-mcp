@@ -124,3 +124,69 @@ func TestAutomationsTools(t *testing.T) {
 		t.Fatalf("path %q", rec.path)
 	}
 }
+
+func TestTestAutomation(t *testing.T) {
+	result := envelope(`{"matched":false,"reason":"condition_halted","device":{"id":"dev_1","scopeId":"spc_1","online":true,"lastSeenAt":1763193600000},"reading":{"source":"device","metrics":{"temp":20},"seenAt":1763193600000},"trigger":{"type":"event","matched":true},"compared":[],"steps":[],"actions":[],"decisions":[]}`)
+	rec := &record{}
+
+	s := testServer(t, 200, result, rec)
+	_, out, err := s.testAutomation(ctx(), nil, TestAutomationInput{AutomationID: "auto_1", DeviceID: "dev_1", Notify: true})
+	if err != nil || !out.OK {
+		t.Fatalf("saved: %v %+v", err, out)
+	}
+	if rec.method != http.MethodPost || rec.path != "/v1/teams/team_1/automations/auto_1/test" {
+		t.Fatalf("saved request %s %s", rec.method, rec.path)
+	}
+	if !strings.Contains(rec.body, `"deviceId":"dev_1"`) || !strings.Contains(rec.body, `"notify":true`) {
+		t.Fatalf("saved body=%q", rec.body)
+	}
+
+	s = testServer(t, 200, result, rec)
+	_, out, err = s.testAutomation(ctx(), nil, TestAutomationInput{
+		Template: "tmpl_1",
+		Params:   []byte(`{"device":"dev_1"}`),
+		ScopeID:  "spc_1",
+		Sample:   []byte(`{"metrics":{"temp":40},"state":"online"}`),
+	})
+	if err != nil || !out.OK {
+		t.Fatalf("draft: %v %+v", err, out)
+	}
+	if rec.path != "/v1/teams/team_1/automations/test" {
+		t.Fatalf("draft path %q", rec.path)
+	}
+	for _, want := range []string{`"template":"tmpl_1"`, `"device":"dev_1"`, `"scopeId":"spc_1"`, `"temp":40`, `"state":"online"`} {
+		if !strings.Contains(rec.body, want) {
+			t.Fatalf("draft body %q lacks %s", rec.body, want)
+		}
+	}
+	if strings.Contains(rec.body, `"name"`) {
+		t.Fatalf("draft sent an empty name: %q", rec.body)
+	}
+
+	payload := `{"trigger":{"type":"event","config":{"metric":"temp"}},"chain":[]}`
+	s = testServer(t, 200, result, rec)
+	if _, out, err := s.testAutomation(ctx(), nil, TestAutomationInput{Name: "Draft", Payload: []byte(payload), DeviceID: "dev_1"}); err != nil || !out.OK {
+		t.Fatalf("draft payload: %v %+v", err, out)
+	}
+	if !strings.Contains(rec.body, `"trigger"`) || !strings.Contains(rec.body, `"name":"Draft"`) {
+		t.Fatalf("draft payload body=%q", rec.body)
+	}
+
+	for name, in := range map[string]TestAutomationInput{
+		"sample":  {AutomationID: "auto_1", Sample: []byte(`{bad`)},
+		"payload": {Payload: []byte(`{bad`)},
+		"params":  {Template: "tmpl_1", Params: []byte(`{bad`)},
+	} {
+		s = testServer(t, 200, result, rec)
+		if _, out, err := s.testAutomation(ctx(), nil, in); err != nil || out.OK {
+			t.Fatalf("%s: want failure, got %v %+v", name, err, out)
+		}
+	}
+
+	for _, in := range []TestAutomationInput{{AutomationID: "auto_1"}, {Template: "tmpl_1"}} {
+		s = testServer(t, 400, `{"message":"test needs a reading"}`, rec)
+		if _, out, err := s.testAutomation(ctx(), nil, in); err != nil || out.OK {
+			t.Fatalf("platform refusal: want failure, got %v %+v", err, out)
+		}
+	}
+}
