@@ -126,11 +126,6 @@
       "tool": "trigger_automation"
     },
     {
-      "method": "PATCH",
-      "path": "/v1/teams/:teamId/billing/addons",
-      "noTool": "human-only"
-    },
-    {
       "method": "POST",
       "path": "/v1/teams/:teamId/billing/checkout-session",
       "noTool": "human-only"
@@ -143,11 +138,6 @@
     {
       "method": "POST",
       "path": "/billing/polar-webhook",
-      "noTool": "webhook"
-    },
-    {
-      "method": "POST",
-      "path": "/billing/stripe-webhook",
       "noTool": "webhook"
     },
     {
