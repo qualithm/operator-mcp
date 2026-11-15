@@ -366,6 +366,11 @@
       "tool": "list_invoices"
     },
     {
+      "method": "POST",
+      "path": "/v1/teams/:teamId/invoices/:invoiceId/document",
+      "noTool": "app-ui"
+    },
+    {
       "method": "GET",
       "path": "/oauth/github",
       "noTool": "auth-flow"
