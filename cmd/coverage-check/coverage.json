@@ -67,6 +67,11 @@
     },
     {
       "method": "GET",
+      "path": "/v1/teams/:teamId/automation-templates",
+      "issue": 4007
+    },
+    {
+      "method": "GET",
       "path": "/v1/teams/:teamId/automations",
       "tool": "list_automations"
     },
