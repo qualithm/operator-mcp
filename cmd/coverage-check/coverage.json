@@ -102,6 +102,16 @@
     },
     {
       "method": "POST",
+      "path": "/v1/teams/:teamId/automations/test",
+      "issue": 3924
+    },
+    {
+      "method": "POST",
+      "path": "/v1/teams/:teamId/automations/:automationId/test",
+      "issue": 3924
+    },
+    {
+      "method": "POST",
       "path": "/v1/teams/:teamId/automations/:automationId/trigger-secret",
       "tool": "create_automation_trigger_secret"
     },
