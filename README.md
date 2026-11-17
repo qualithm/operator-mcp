@@ -5,8 +5,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/qualithm/operator-mcp.svg)](https://pkg.go.dev/github.com/qualithm/operator-mcp)
 
 Go MCP server for managing teams, scopes and devices on Qualithm. It exposes the platform management
-API — teams, members, scopes, devices, credentials, enrollments, authorities, API tokens,
-automations, dashboards, observability, and read-only workspace and billing state — as MCP tools
+API — teams, members, scopes, devices, credentials, claim codes, authorities, API tokens,
+automations, dashboards, observability, and read-only account and billing state — as MCP tools
 over stdio, backed by the same `operator` client as the `qualithm` CLI, so both return the same
 results.
 
@@ -74,7 +74,7 @@ Register it with an MCP-capable agent, for example:
 | Resource            | Tools                                                                                                                                                                                                                                         |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | authorities         | `list_authorities` · `create_authority` · `revoke_authority`                                                                                                                                                                                  |
-| enrollments         | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                                                                                                                                                                |
+| claim codes         | `list_enrollments` · `create_enrollment` · `revoke_enrollment`                                                                                                                                                                                |
 | credentials         | `list_credentials` · `mint_credential` · `issue_cert` · `rotate_credential` · `revoke_credential`                                                                                                                                             |
 | devices             | `list_devices` · `get_device` · `create_device` · `update_device` · `delete_device`                                                                                                                                                           |
 | device commands     | `list_device_commands` · `send_device_command` · `get_device_capabilities`                                                                                                                                                                    |
@@ -157,8 +157,8 @@ make test-coverage     # with coverage report
 ### Agent eval
 
 `cmd/agent-eval` is the end-to-end agent-native eval: it drives the documented agent path against a
-live environment — create an enrollment via the MCP tools, claim the device, connect to the gateway,
-publish telemetry, and read it back — and records every step where the agent had to supply
+live environment — create a claim code via the MCP tools, claim the device, connect to the gateway,
+publish a reading, and read it back — and records every step where the agent had to supply
 information the surfaces did not provide (the friction log). The `Agent Eval` workflow runs it
 weekly against sandbox and files a deduped issue on failure.
 
