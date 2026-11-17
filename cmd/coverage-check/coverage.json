@@ -609,6 +609,16 @@
       "method": "POST",
       "path": "/v1/account/oauth/authorization",
       "noTool": "human-only"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/account/oauth/grants",
+      "noTool": "human-only"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/account/oauth/grants/:grantId",
+      "noTool": "human-only"
     }
   ]
 }
