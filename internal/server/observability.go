@@ -9,10 +9,10 @@ import (
 	operator "github.com/qualithm/operator-go"
 )
 
-// GetTelemetryInput reads bucketed telemetry points for a device metric.
+// GetTelemetryInput reads bucketed readings for a device metric.
 // From and To are RFC 3339 times.
 type GetTelemetryInput struct {
-	DeviceID string `json:"deviceId" jsonschema:"id of the device to read telemetry for"`
+	DeviceID string `json:"deviceId" jsonschema:"id of the device the readings come from"`
 	Metric   string `json:"metric" jsonschema:"metric name to read"`
 	From     string `json:"from" jsonschema:"range start, RFC 3339, inclusive"`
 	To       string `json:"to" jsonschema:"range end, RFC 3339, exclusive"`
@@ -41,7 +41,7 @@ type GetAuditLogInput struct {
 func (s *Server) registerObservability(srv *mcp.Server) {
 	addTool(s, srv, &mcp.Tool{
 		Name:        "get_telemetry",
-		Description: "Read bucketed telemetry points for a device metric over a time range.",
+		Description: "Read bucketed readings for a device metric over a time range.",
 	}, s.getTelemetry, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "stream_events",
