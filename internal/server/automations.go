@@ -69,6 +69,10 @@ type ListAutomationTemplatesInput struct {
 	DeviceID string `json:"deviceId" jsonschema:"id of the device whose declared capabilities filter the catalogue"`
 }
 
+// ListTeamAutomationTemplatesInput lists the whole catalogue for the token's
+// team; it takes no arguments.
+type ListTeamAutomationTemplatesInput struct{}
+
 // TriggerAutomationInput fires an automation's webhook trigger. secret is the
 // trigger secret issued by create_automation_trigger_secret, not the member
 // API token.
@@ -134,6 +138,10 @@ func (s *Server) registerAutomations(srv *mcp.Server) {
 		Name:        "list_automation_templates",
 		Description: "List the automation template catalogue filtered to what a device declared it can do.",
 	}, s.listAutomationTemplates, false)
+	addTool(s, srv, &mcp.Tool{
+		Name:        "list_team_automation_templates",
+		Description: "List every automation template for the token's team, each with what it needs (a reading, a device to command, a schedule or a webhook), whether any of the team's devices can use it, and which ones.",
+	}, s.listTeamAutomationTemplates, false)
 	addTool(s, srv, &mcp.Tool{
 		Name:        "trigger_automation",
 		Description: "Fire an automation's webhook trigger, authenticated by its trigger secret.",
@@ -291,6 +299,18 @@ func (s *Server) listAutomationTemplates(ctx context.Context, _ *mcp.CallToolReq
 		return fail(err)
 	}
 	tmpls, err := c.ListAutomationTemplates(ctx, in.DeviceID)
+	if err != nil {
+		return fail(err)
+	}
+	return ok(tmpls)
+}
+
+func (s *Server) listTeamAutomationTemplates(ctx context.Context, _ *mcp.CallToolRequest, _ ListTeamAutomationTemplatesInput) (*mcp.CallToolResult, Result, error) {
+	c, err := s.newClient(false)
+	if err != nil {
+		return fail(err)
+	}
+	tmpls, err := c.ListTeamAutomationTemplates(ctx)
 	if err != nil {
 		return fail(err)
 	}

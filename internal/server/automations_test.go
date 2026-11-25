@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
@@ -106,6 +107,16 @@ func TestAutomationsTools(t *testing.T) {
 	}
 	if rec.path != "/v1/teams/team_1/devices/dev_1/automation-templates" {
 		t.Fatalf("path %q", rec.path)
+	}
+
+	s = testServer(t, 200, envelope(`[{"id":"tmpl_1","needs":["sensor"],"usable":true,"devices":["dev_1"]}]`), rec)
+	_, team, err := s.listTeamAutomationTemplates(ctx(), nil, ListTeamAutomationTemplatesInput{})
+	if err != nil || !team.OK {
+		t.Fatalf("listTeamAutomationTemplates: %v %+v", err, team)
+	}
+	got, _ := json.Marshal(team.Data)
+	if rec.path != "/v1/teams/team_1/automation-templates" || !strings.Contains(string(got), `"needs":["sensor"]`) || !strings.Contains(string(got), `"usable":true`) || !strings.Contains(string(got), `"devices":["dev_1"]`) {
+		t.Fatalf("path %q data %s", rec.path, got)
 	}
 
 	s = testServer(t, 200, envelope(`{"runId":"run_9"}`), rec)
